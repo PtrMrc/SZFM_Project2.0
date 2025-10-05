@@ -1,0 +1,28 @@
+# Jegyzőkönyv - 2025.10.05.
+
+## Résztvevők
+- Fekete Domán Csaba
+- Péter Marcell
+
+## Megbeszélés témái
+- Projekt témájának megtervezése
+- Első feladatok kitűzése
+- Használandó technológiák meghatározésa
+
+## Döntések
+- Projekt témája: Battle Royale Kvízjáték
+
+## Feladatok
+- Figma tervek
+- Trello tábla
+- Bejelentkező oldal
+- Kérdések megjelenítése
+- Kiesők/továbbjutók megjelenítése
+- Játék végén ranglista
+
+## Ötletek
+- Multiplayer játékmenet
+- 50 játékos egy szobában
+- Csatlakozás szobához kóddal vagy véletlenszerű szobaválasztás
+- Kérdésbank helyett API hívásokkal AI-generált kérdések (pl. téma alapján)
+- Felmerült eszközök: Cohere (api hívások), Heroku, Netlify, 
