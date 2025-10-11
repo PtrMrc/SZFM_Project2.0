@@ -1,0 +1,62 @@
+# ===========================
+# OS files
+# ===========================
+.DS_Store
+Thumbs.db
+
+# ===========================
+# Python / Flask backend
+# ===========================
+
+# Python bytecode and cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# Flask specific
+instance/
+.webassets-cache
+
+# Environment files
+.env
+.env.*.local
+
+# Build / cache artifacts
+.pytest_cache/
+.coverage
+.cache/
+dist/
+build/
+*.egg-info/
+
+# ===========================
+# Node / React frontend
+# ===========================
+client/node_modules/
+client/dist/
+client/build/
+client/.cache/
+client/.vite/
+
+# Environment variables
+client/.env
+client/.env.local
+client/.env.*.local
+
+# Logs
+client/npm-debug.log*
+client/yarn-debug.log*
+client/yarn-error.log*
+
+# ===========================
+# IDE / Editor
+# ===========================
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
