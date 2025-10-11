@@ -10,7 +10,7 @@ def create_room(room_code):
     if room_code not in rooms:
         rooms[room_code] = {
             "players": [],
-            "status:": "waiting",
+            "status": "waiting",
             "current_question": None
         }
     return rooms[room_code]

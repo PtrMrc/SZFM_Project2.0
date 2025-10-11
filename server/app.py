@@ -1,6 +1,9 @@
 from flask import Flask
+from flask import request
 from flask_socketio import SocketIO, emit, join_room
 from game.rooms import create_room, add_player, rooms
+from question_generator import spin_wheel, generate_question
+
 
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*")
@@ -33,14 +36,30 @@ def handle_start(data):
 
     rooms[room_code]["status"] = "in-progress"
 
-    question = {
-        "question": "Mennyi 2 + 2?",
-        "choices": ["3", "4", "5", "6"],
-        "correct": "4"
-    }
+    # Témakör választás kerékpörgetés szimulálásával
+    topic = spin_wheel()
+
+    # Az adott témakörhöz kérdés generálása
+    question = generate_question(topic)
+
 
     rooms[room_code]["current_question"] = question
     emit("new_question", question, room=room_code)
+
+@socketio.on("answer_question")
+def handle_answer(data):
+    room_code = data.get("room")
+    username = data.get("username")
+    answer = data.get("answer")
+
+    question = rooms[room_code]["current_question"]
+    correct = question["correct"]
+
+    # Emit only to the player who answered
+    if answer == correct:
+        emit("answer_result", {"correct": True}, room=request.sid)
+    else:
+        emit("answer_result", {"correct": False}, room=request.sid)
 
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=5000, debug=True)
