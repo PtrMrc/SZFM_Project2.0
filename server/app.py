@@ -1,8 +1,9 @@
 from flask import Flask
+import os
 from flask import request
 from flask_socketio import SocketIO, emit, join_room
 from game.rooms import create_room, add_player, rooms
-from question_generator import spin_wheel, generate_question
+from question_generator import get_all_topics, spin_wheel, generate_question
 
 
 app = Flask(__name__)
@@ -60,6 +61,30 @@ def handle_answer(data):
         emit("answer_result", {"correct": True}, room=request.sid)
     else:
         emit("answer_result", {"correct": False}, room=request.sid)
+
+
+#----------------------------------------------------------
+"""
+TESZT ENDPOINT - véletlenszerű kérdés visszaadása
+"""
+@app.route('/api/question')
+def get_question():
+    topics = get_all_topics()
+    topic = spin_wheel(topics)
+    question = generate_question(topic, topics[topic])
+    question["topic"] = topic
+    return question
+
+from flask import send_from_directory
+
+@app.route('/test')
+def serve_frontend():
+    client_dir = os.path.join(os.path.dirname(__file__), '..', 'client')
+    return send_from_directory(client_dir, 'teszt_index.html')
+
+
+#-----------------------------------------------------------
+
 
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=5000, debug=True)

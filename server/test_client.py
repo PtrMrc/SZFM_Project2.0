@@ -1,11 +1,12 @@
 import socketio
 
-from question_generator import spin_wheel, generate_question
+from question_generator import get_all_topics, spin_wheel, generate_question
 
-topic = spin_wheel()
+topics = get_all_topics()
+topic = spin_wheel(topics)
 print("Topic chosen:", topic)
 
-question = generate_question(topic)
+question = generate_question(topic, topics[topic])
 print("Generated question:", question["question"])
 print("Choices:", question["choices"])
 print("Correct answer:", question["correct"])

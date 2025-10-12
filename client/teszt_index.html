@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trivia Teszt</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex flex-col items-center min-h-screen p-6">
+
+  <h1 class="text-3xl font-bold mb-6">🎡 Szerencsekerék Kvíz</h1>
+
+  <div id="game-container" class="bg-white rounded-2xl shadow-md p-6 w-full max-w-lg text-center">
+    <button id="spin-btn" class="bg-blue-600 text-white px-6 py-2 rounded-xl hover:bg-blue-700 transition">
+      Pörgesd meg a kereket 🎲
+    </button>
+
+    <div id="question-section" class="hidden mt-6">
+      <h2 id="topic" class="text-xl font-semibold mb-2"></h2>
+      <p id="question" class="text-lg mb-4"></p>
+      <div id="choices" class="flex flex-col gap-2"></div>
+      <p id="result" class="mt-4 text-lg font-bold"></p>
+      <button id="next-btn" class="mt-4 bg-green-600 text-white px-6 py-2 rounded-xl hover:bg-green-700 transition hidden">
+        Következő kérdés ➡️
+      </button>
+    </div>
+  </div>
+
+  <script>
+    const spinBtn = document.getElementById('spin-btn');
+    const questionSection = document.getElementById('question-section');
+    const topicEl = document.getElementById('topic');
+    const questionEl = document.getElementById('question');
+    const choicesEl = document.getElementById('choices');
+    const resultEl = document.getElementById('result');
+    const nextBtn = document.getElementById('next-btn');
+
+    async function getQuestion() {
+      const res = await fetch('/api/question'); // adjust endpoint to your backend
+      const data = await res.json();
+      return data;
+    }
+
+    async function startRound() {
+      const data = await getQuestion();
+
+      topicEl.textContent = `Téma: ${data.topic}`;
+      questionEl.textContent = data.question;
+
+      choicesEl.innerHTML = '';
+      resultEl.textContent = '';
+      nextBtn.classList.add('hidden');
+
+      data.choices.forEach(choice => {
+        const btn = document.createElement('button');
+        btn.textContent = choice;
+        btn.className = 'border border-gray-300 rounded-xl px-4 py-2 hover:bg-gray-200';
+        btn.onclick = () => {
+          if (choice === data.correct) {
+            resultEl.textContent = '✅ Helyes válasz!';
+            resultEl.className = 'text-green-600 font-bold';
+          } else {
+            resultEl.textContent = `❌ Rossz válasz! Helyes: ${data.correct}`;
+            resultEl.className = 'text-red-600 font-bold';
+          }
+          nextBtn.classList.remove('hidden');
+        };
+        choicesEl.appendChild(btn);
+      });
+
+      questionSection.classList.remove('hidden');
+    }
+
+    spinBtn.addEventListener('click', startRound);
+    nextBtn.addEventListener('click', startRound);
+  </script>
+</body>
+</html>

@@ -1,62 +1,54 @@
 import random
-import cohere
-from dotenv import load_dotenv
-import os
-import json
+import requests
+import html
 
-# Api kulcs beillesztése
-load_dotenv()
-api_key = os.getenv("COHERE_API_KEY")
-co = cohere.Client(api_key)
-
-#Témakörök
-TOPICS = ["Matematika", "Történelem", "Tudomány", "Földrajz", "Filmek", "Sport"]
-
-def spin_wheel():
+def get_all_topics():
     """
-    Lestimulál egy szerencsekerék pörgetést és visszaad egy véletlenszerű témakört.
+    Lekéri az összes elérhető kategóriát az Open Trivia DB API-ból.
     """
-    chosen_topic = random.choice(TOPICS)
+    url = "https://opentdb.com/api_category.php"
+    response = requests.get(url)
+    data = response.json()
+
+    # Dictionary: {"Category Name": id, ...}
+    topics = {cat["name"]: cat["id"] for cat in data["trivia_categories"]}
+    return topics
+
+def spin_wheel(topics):
+    """
+    Véletlenszerű témakör kiválasztása az elérhető listából.
+    """
+    chosen_topic = random.choice(list(topics.keys()))
     return chosen_topic
 
-def generate_question(topic):
+def generate_question(topic, category_id):
     """
-    Kérdésgenerálás a Cohere API segítségével adott témakör alapján.
+    Kérdés lekérése az Open Trivia DB API-ból az adott kategória alapján.
     """
-    prompt = (
-        f"Generate a multiple-choice question about '{topic}' in hungarian. "
-        "Include 4 choices and mark the correct answer. "
-        "Return the result in JSON format like this:\n"
-        "{\n  'question': '...',\n  'choices': ['a','b','c','d'],\n  'correct': '...'\n}"
-    )
-
-    response = co.chat(
-    model="command-a-03-2025",
-    message=prompt,
-    max_tokens=150,
-    temperature=0.7
-    )
+    url = f"https://opentdb.com/api.php?amount=1&category={category_id}&type=multiple"
 
     try:
-        # A helyes attribútum használata
-        response_text = response.text
+        response = requests.get(url)
+        data = response.json()
 
-        # Markdown kódblokk eltávolítása, ha van
-        if "```json" in response_text:
-            response_text = response_text.split("```json")[1].split("```")[0].strip()
-        elif "```" in response_text:
-            response_text = response_text.split("```")[1].split("```")[0].strip()
+        if data["response_code"] != 0 or not data["results"]:
+            raise ValueError("No results from Open Trivia DB")
 
-        # JSON parse
-        question_json = json.loads(response_text)
+        q = data["results"][0]
+        question = html.unescape(q["question"])
+        correct = html.unescape(q["correct_answer"])
+        choices = [html.unescape(ans) for ans in q["incorrect_answers"]]
+        choices.append(correct)
+        random.shuffle(choices)
 
-        # Ellenőrzés, hogy minden szükséges mező megvan-e
-        if not all(key in question_json for key in ["question", "choices", "correct"]):
-            raise ValueError("Missing required fields in JSON")
+        question_json = {
+            "question": question,
+            "choices": choices,
+            "correct": correct
+        }
 
     except Exception as e:
-        print(f"Error parsing Cohere response: {e}")
-        print(f"Raw response: {response.text[:200]}...")
+        print(f"Hiba a kérdés lekérésekor: {e}")
         question_json = {
             "question": f"Minta kérdés a következő témakörben: {topic}",
             "choices": ["A", "B", "C", "D"],
@@ -64,3 +56,13 @@ def generate_question(topic):
         }
 
     return question_json
+
+
+# Példa használat
+if __name__ == "__main__":
+    TOPICS = get_all_topics()
+    print(f"Elérhető témakörök száma: {len(TOPICS)}")
+    topic = spin_wheel(TOPICS)
+    print("Kiválasztott témakör:", topic)
+    question = generate_question(topic, TOPICS[topic])
+    print(question)
