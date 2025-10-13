@@ -68,6 +68,7 @@
 - Játékmenet:
   - Játékosok indítják a kvízt, valós időben versenyeznek
   - Kérdések időzítéssel jelennek meg
+  - Kérdések között "szerencsekerék" animáció
   - Automatikus pontozás a válaszok gyorsasága és helyessége alapján
 - Eredmények megjelenítése:
   - Kvíz végén összesítés (helyes válaszok száma, pontszám)
@@ -96,3 +97,4 @@
       - Helyes válaszok száma
       - Pontszám
       - Ranglista
+
