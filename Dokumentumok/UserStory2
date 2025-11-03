@@ -2,3 +2,18 @@ Okos Ottó belép a fiókjába és becsatlakozik a barátai által létrehozott 
 Elkezdődik a játék és Okos Ottó végig dominálja az egész játékot és megnyeri azt. 
 A végén az ő neve jelenik meg a dobogó tetején és megnézi a ranglistát, hogy a barátai hol végeztek. 
 Majd kilép a főmenübe és készít egy szobát, hogy megint lealázza a barátait.
+
+Gherkin nyelven:
+
+Scenario: Okos Ottó megnyeri a barátai által indított játékot
+
+Given Okos Ottó bejelentkezik a fiókjába
+And csatlakozik a barátai által létrehozott szobához PIN-kód segítségével
+When elkezdődik a játék
+Then Okos Ottó dominálja az egész játékot és megnyeri azt
+
+And a játék végén az ő neve jelenik meg a dobogó tetején
+And megtekinti a ranglistát, hogy lássa, barátai hol végeztek
+
+When kilép a főmenübe
+Then új szobát hoz létre, hogy ismét játszhasson a barátaival
