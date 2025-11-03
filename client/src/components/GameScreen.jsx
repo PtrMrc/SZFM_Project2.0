@@ -31,7 +31,7 @@ export default function GameScreen({ username, room, setScreen }) {
       const isSurvivor = data.survivors.includes(username);
 
       if (isEliminated) {
-        setRoundFeedback("❌ Rossz válasz! Kiesettél!");
+        setRoundFeedback("❌ Rossz válasz! Kiestél!");
         setEliminated(true);
       } else if (isSurvivor) {
         setRoundFeedback("✅ Helyes válasz!");
@@ -80,7 +80,7 @@ export default function GameScreen({ username, room, setScreen }) {
   if (eliminated) {
     return (
       <div className="flex flex-col items-center justify-center h-screen text-white bg-red-800">
-        <h2 className="text-3xl font-bold mb-4">❌ Kiesettél!</h2>
+        <h2 className="text-3xl font-bold mb-4">❌ Kiestél!</h2>
         <p>Várd meg, amíg a játék véget ér...</p>
       </div>
     );
@@ -138,7 +138,7 @@ export default function GameScreen({ username, room, setScreen }) {
       )}
 
       {answered && !roundFeedback && (
-        <p className="mt-6 text-gray-400">✅ Válasz elküldve, várd az eredményt...</p>
+        <p className="mt-6 text-gray-400">✅ Válasz elküldve ✅</p>
       )}
     </div>
   );
