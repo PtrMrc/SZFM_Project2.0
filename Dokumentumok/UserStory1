@@ -4,3 +4,25 @@ Helyesen válaszol a kérdésre így továbbjut a következő körbe.
 A következő körben Matematika témát kap amire hezitálva válaszol, viszont helyesen. 
 A harmadik körben már csak 10en maradtak és a téma Fizika. Szerencsés Szilvi nem járt be a Fizika órákra ezért nem tudja a válasz és rosszul tippelt. 
 Ezzel Szilvi kiesett a játékből és 10. helyen végzett. Szilvi megtekinti a helyes választ a kérdésére, hogy ebből is tanuljon, majd visszaérkezik a kezdőlapra.
+
+Gherkin nyelven:
+
+Scenario: Szerencsés Szilvi játszik egy meccset
+
+Given Szerencsés Szilvi megnyitja a weboldalt
+And bejelentkezik a profiljába
+When keres egy elérhető meccset
+And a rendszer talál számára egy meccset
+Then az első körben megkapja a témát, ami Történelem
+And helyesen válaszol a kérdésre, így továbbjut a következő körbe
+
+When a második körben a témája Matematika
+And hezitálva, de helyesen válaszol
+Then továbbjut a harmadik körbe
+
+When a harmadik körben a téma Fizika
+And Szilvi rosszul válaszol a kérdésre
+Then kiesik a játékból és a 10. helyen végez
+
+And Szilvi megtekinti a helyes választ
+And visszatér a kezdőlapra
