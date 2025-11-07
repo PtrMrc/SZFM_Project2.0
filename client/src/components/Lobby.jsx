@@ -4,11 +4,27 @@ import { socket } from "../utils/socket";
 export default function Lobby({ username, room, setScreen }) {
   const [players, setPlayers] = useState([]);
   const [host, setHost] = useState(null);
+  const [joinMessage, setJoinMessage] = useState("");
 
   useEffect(() => {
+
+    //lekéri a szoba állapotát
+    socket.emit("request_room_state", { room });
+
+    socket.on("room_state", (data) => {
+      console.log("📥 Room state received:", data);
+      setPlayers(data.players);
+      setHost(data.host);
+    });
+
     socket.on("player_joined", (data) => {
       setPlayers(data.players);
       setHost(data.host);
+
+    if (data.new_player && data.new_player !== username) {
+      setJoinMessage(`👋 ${data.new_player} csatlakozott a szobához!`);
+      setTimeout(() => setJoinMessage(""), 2000);
+    }
     });
 
     // 🔹 Csak logoljuk, ne állítsuk le az eseményt
@@ -18,10 +34,11 @@ export default function Lobby({ username, room, setScreen }) {
     });
 
     return () => {
+      socket.off("room_state");
       socket.off("player_joined");
       socket.off("new_question");
     };
-  }, [room]);
+  }, [room,username,setScreen]);
 
   const startGame = () => {
     socket.emit("start_game", { room, username });
@@ -56,6 +73,11 @@ export default function Lobby({ username, room, setScreen }) {
         >
           🎮 Játék indítása
         </button>
+      )}
+      {joinMessage && (
+        <p className="mt-4 text-green-400 font-semibold animate-pulse">
+          {joinMessage}
+        </p>
       )}
     </div>
   );

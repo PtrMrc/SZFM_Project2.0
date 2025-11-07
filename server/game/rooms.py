@@ -17,4 +17,10 @@ def create_room(room_code):
 
 def add_player(room_code, username):
     if room_code in rooms:
-        rooms[room_code]["players"].append(username)
+        players = rooms[room_code]["players"]
+        if username not in players:
+            players.append(username)
+            return True
+        else:
+            return False
+    return False

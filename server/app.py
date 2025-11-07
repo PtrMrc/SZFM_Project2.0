@@ -27,13 +27,27 @@ def handle_join(data):
     if "host" not in room:
         room["host"] = username
 
-    if username not in room["players"]:
-        add_player(room_code, username)
-
+    if username in room["players"]:
+        emit("join_error", {"msg": f"A '{username}' nevű játékos már csatlakozott ehhez a szobához."})
+        return
+    
+    add_player(room_code, username)
     join_room(room_code)
 
     print(f"✅ {username} joined {room_code}")
-    emit("player_joined", {"players": room["players"], "host": room["host"]}, room=room_code)
+
+    emit("join_success", {"msg": f"Sikeresen csatlakoztál a(z) {room_code} szobához!"}, to=request.sid)
+    emit("player_joined", {"players": room["players"], "host": room["host"],"new_player": username,}, room=room_code)
+
+@socketio.on("request_room_state")
+def handle_request_room_state(data):
+    room_code = data.get("room")
+    if not room_code or room_code not in rooms:
+        emit("join_error", {"msg": "A szoba nem létezik."}, to=request.sid)
+        return
+
+    room = rooms[room_code]
+    emit("room_state", {"players": room["players"], "host": room["host"]}, to=request.sid)
 
 @socketio.on("start_game")
 def handle_start(data):

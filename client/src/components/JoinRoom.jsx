@@ -1,18 +1,42 @@
-import React, { useState } from "react";
+import React, { useState,useEffect  } from "react";
 import { socket } from "../utils/socket";
 
 export default function JoinRoom({ onJoin }) {
   const [username, setUsername] = useState("");
   const [room, setRoom] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
+
+    useEffect(() => {
+    socket.on("join_success", (data) => {
+      console.log("✅ Successfully joined:", data);
+      setSuccessMsg(data.msg || "Sikeresen csatlakoztál!");
+      setErrorMsg("");
+
+      
+      setTimeout(() => {
+        onJoin(room, username);
+      }, 2000);
+    });
+
+    socket.on("join_error", (data) => {
+      console.warn("Join error:", data);
+      setErrorMsg(data.msg || "Ismeretlen hiba történt.");
+      setSuccessMsg("");
+    });
+
+    return () => {
+      socket.off("join_success");
+      socket.off("join_error");
+    };
+  }, [room, username, onJoin]);
 
   const handleJoin = () => {
-    if (!username || !room) return alert("Add meg a neved és a szobakódot!");
+  if (!username || !room) return alert("Add meg a neved és a szobakódot!");
 
-    // 1️⃣ Csatlakozás a szerverhez
-    socket.emit("join_room", { username, room });
+  setErrorMsg("");
 
-    // 2️⃣ Átadjuk az App.js-nek a room és username értéket
-    onJoin(room, username);
+  socket.emit("join_room", { username, room });
   };
 
   return (
@@ -41,6 +65,14 @@ export default function JoinRoom({ onJoin }) {
       >
         Csatlakozás
       </button>
+
+      {errorMsg && (
+        <p className="mt-4 text-red-400 font-semibold">{errorMsg}</p>
+      )}
+      {successMsg && (
+        <p className="mt-4 text-green-400 font-semibold">{successMsg}</p>
+      )}
+
     </div>
   );
 }
