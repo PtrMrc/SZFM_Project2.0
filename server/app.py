@@ -1,7 +1,7 @@
 from flask import Flask, request
 from flask_socketio import SocketIO, emit, join_room
 from game.rooms import create_room, add_player, rooms
-from question_generator import spin_wheel, generate_question
+from question_generator import spin_wheel, generate_question, get_all_topics
 import threading
 import time
 
@@ -62,15 +62,16 @@ def handle_start(data):
 def send_new_question(room_code):
     """Új kérdés generálása és elküldése mindenkinek"""
     room = rooms[room_code]
-    topic = spin_wheel()
-    question = generate_question(topic)
+    topics = get_all_topics()
+    topic = spin_wheel(topics)
+    question = generate_question(topic, topics[topic])
     room["current_question"] = question
     room["answers"] = {}
 
     print(f"🧠 Sending new question to {room_code}: {question['question']}")
     print(f"📤 Active players in room {room_code}: {room.get('active_players', [])}")
     print(f"📤 Players in global rooms list: {rooms[room_code]['players']}")
-    
+
     socketio.emit("new_question", {"question": question, "timer": 10}, room=room_code)
 
     # Időzítő szál (10 másodperc után kiértékel)
