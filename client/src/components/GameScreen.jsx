@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef} from "react";
 import { socket } from "../utils/socket";
 
 export default function GameScreen({ username, room, setScreen }) {
@@ -8,6 +8,21 @@ export default function GameScreen({ username, room, setScreen }) {
   const [eliminated, setEliminated] = useState(false);
   const [winner, setWinner] = useState(null);
   const [roundFeedback, setRoundFeedback] = useState(null);
+  const currentRoundId = useRef(null);
+  const animationFrameId = useRef(null);
+ const [roundEndTime, setRoundEndTime] = useState(null);
+
+  useEffect(() => {
+    const requestTimer = setTimeout(() => {
+        if (!question) {
+            console.log("❓ Still no question, requesting from server...");
+            socket.emit("request_current_question", {room});
+        }
+    }, 3000);   
+    return () => {
+        clearTimeout(requestTimer);
+    };
+  }, [question, room]);
 
   useEffect(() => {
     console.log("🎧 GameScreen mounted, waiting for questions...");
@@ -16,32 +31,74 @@ export default function GameScreen({ username, room, setScreen }) {
 
     socket.on("new_question", (data) => {
     console.log("🧠 Új kérdés esemény érkezett:", data);
-    if (!data || !data.question) {
-        console.warn("⚠️ new_question üres adatot kapott!");
+    if (!data || !data.question || !data.round_end_time || !data.round_id) {
+      console.warn("⚠️ new_question hiányos adatot kapott!");
+      return;
+      }
+
+    if (data.round_id === currentRoundId.current) {
+        console.log(`🔄 Ignoring duplicate new_question for round ${data.round_id}`);
         return;
     }
-    setQuestion(data.question);
-    setTimer(data.timer);
+    if (eliminated) {
+        console.log("⏹️ Player eliminated, ignoring new question");
+        return;
+    }
+
+    if (animationFrameId.current) {
+      cancelAnimationFrame(animationFrameId.current)
+    }
+
+    currentRoundId.current = data.round_id;
+    setQuestion(data.question)
+    setRoundEndTime(data.round_end_time); 
+  	setRoundFeedback(null);
+    setTimer(data.timer); 
     setAnswered(false);
-    setRoundFeedback(null);
+
+    console.log(`⏱️ New round ${data.round_id} started with ${data.timer}s`);
     });
 
     socket.on("round_result", (data) => {
-      const isEliminated = data.eliminated.includes(username);
-      const isSurvivor = data.survivors.includes(username);
 
-      if (isEliminated) {
-        setRoundFeedback("❌ Rossz válasz! Kiestél!");
-        setEliminated(true);
-      } else if (isSurvivor) {
-        setRoundFeedback("✅ Helyes válasz!");
-      } else {
-        setRoundFeedback("⏰ Nem válaszoltál időben!");
-        setEliminated(true);
+      if (data.round_id !== currentRoundId.current) {
+        console.log(`⚠️ Ignoring stale round_result for ${data.round_id}`);
+        return;
       }
 
-      // 3 másodperc múlva töröljük a feedbacket (vagy jön új kérdés)
-      setTimeout(() => setRoundFeedback(null), 3000);
+ 	    if (animationFrameId.current) {
+	  	cancelAnimationFrame(animationFrameId.current);
+      }
+ 	    setTimer(0); 
+      setRoundEndTime(null); 
+
+      const eliminatedCount = data.eliminated.length;
+      const survivorCount = data.survivors.length;
+      const noRightAnswers=data.message;
+      const statsMessage = `\n(Kiesettek: ${eliminatedCount}, Túlélők: ${survivorCount})`;
+
+      if (noRightAnswers) {
+        setRoundFeedback(`${noRightAnswers}\n (A helyes válasz: ${data.correct}) ${statsMessage}`);
+        setTimeout(() => setRoundFeedback(null), 5000);
+
+      } else
+      {
+        const isEliminated = data.eliminated.includes(username);
+        const isSurvivor = data.survivors.includes(username);
+
+        if (isEliminated) {
+          setRoundFeedback(`❌ Rossz válasz! Kiestél! A helyes: ${data.correct}`);
+          setTimeout(() => {setEliminated(true);}, 5000);
+
+        } else if (isSurvivor) {
+          setRoundFeedback(`✅ Helyes válasz! ${statsMessage}`);
+          setTimeout(() => setRoundFeedback(null), 5000);
+
+        } else {
+          setRoundFeedback("⏰ Nem válaszoltál időben!");
+          setTimeout(() => {setEliminated(true);}, 5000);
+        }
+      }
     });
 
     socket.on("player_eliminated", (data) => {
@@ -49,31 +106,61 @@ export default function GameScreen({ username, room, setScreen }) {
     });
 
     socket.on("game_over", (data) => {
-      setWinner(data.winner);
-      setTimeout(() => setScreen("result"), 4000);
-    });
-
-    socket.emit("request_current_question", {room});
+ 	    if (animationFrameId.current) {
+ 	  	cancelAnimationFrame(animationFrameId.current);
+ 	    }
+      setTimer(0);
+        setRoundEndTime(null);
+        
+      setTimeout(() => {
+        setWinner(data.winner);
+        setTimeout(() => {setScreen("result");}, 4000);
+      }, 5000);
+      });
 
     return () => {
       socket.off("new_question");
       socket.off("round_result");
       socket.off("player_eliminated");
       socket.off("game_over");
-    };
-  }, []);
 
-  // 🔹 Timer logika
+    if (animationFrameId.current) {
+        cancelAnimationFrame(animationFrameId.current);
+      }
+    };
+  }, [username, room, setScreen,eliminated]);
+
+   // Timer logic
   useEffect(() => {
-    if (timer <= 0) return;
-    const interval = setInterval(() => setTimer((t) => t - 1), 1000);
-    return () => clearInterval(interval);
-  }, [timer]);
+    if (roundEndTime) {
+      const updateTimer = () => {
+        const nowInSeconds = Date.now() / 1000;
+        const remaining = Math.max(0, roundEndTime - nowInSeconds);
+        
+        setTimer(Math.ceil(remaining)); 
+
+        if (remaining > 0) {
+          animationFrameId.current = requestAnimationFrame(updateTimer);
+        } else {
+          setTimer(0); 
+        }
+      };
+
+      animationFrameId.current = requestAnimationFrame(updateTimer);
+    }
+
+    return () => {
+      if (animationFrameId.current) {
+        cancelAnimationFrame(animationFrameId.current);
+      }
+    };
+  }, [roundEndTime]);
 
   const sendAnswer = (choice) => {
-    if (answered || eliminated) return;
-    socket.emit("answer_question", { room, username, answer: choice });
+    if (answered || eliminated || timer <= 0) return;
+    socket.emit("answer_question", { room, username, answer: choice,round_id: currentRoundId.current});
     setAnswered(true);
+    console.log(`📤 Answer sent: ${choice} for round ${currentRoundId.current}`);
   };
 
   // 🔹 Ha kiesett
@@ -127,10 +214,13 @@ export default function GameScreen({ username, room, setScreen }) {
       {/* 🔹 Feedback a kör végén */}
       {roundFeedback && (
         <p
+          style={{ whiteSpace:'pre-line'}}
           className={`mt-8 text-2xl font-bold ${
             roundFeedback.includes("✅")
-              ? "text-green-400"
-              : "text-red-400"
+              ?"text-green-400"
+              :(roundFeedback.startsWith("❌")||roundFeedback.startsWith("⏰"))
+              ?"text-red-400" 
+              :"text-yellow-400" 
           }`}
         >
           {roundFeedback}
