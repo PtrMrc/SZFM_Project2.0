@@ -144,7 +144,7 @@ def send_new_question(room_code):
         "round_end_time": room["round_end_time"]
     }, room=room_code)
 
-    socketio.start_background_task(target=prefetch_next_question, room_code=room_code)
+    socketio.start_background_task(target=delayed_prefetch, room_code=room_code, delay_seconds=7)
     socketio.start_background_task( target=evaluate_answers,  room_code=room_code, round_id=round_id)
 
 def prefetch_next_question(room_code):
@@ -291,6 +291,17 @@ def delayed_next_question(room_code, delay):
     room = rooms.get(room_code)
     if room and room.get("status") == "in-progress":
         send_new_question(room_code)
+
+def delayed_prefetch(room_code, delay_seconds):
+    print(f"⏰ Prefetch timer started for {room_code}, will run in {delay_seconds}s...")
+    socketio.sleep(delay_seconds)
+    
+    room = rooms.get(room_code)
+    if room and room.get("status") == "in-progress":
+        print(f"🚀 Running delayed prefetch for {room_code}")
+        prefetch_next_question(room_code)
+    else:
+        print(f"ℹ️ Delayed prefetch for {room_code} cancelled (game not in progress).")
 
 @socketio.on("request_current_question")
 def handle_request_current_question(data):
