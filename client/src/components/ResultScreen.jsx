@@ -19,6 +19,7 @@ export default function ResultScreen({ setScreen }) {
 
     console.log("ResultScreen mounted, waiting for game_over...");
 
+    socket.off("game_over"); 
     socket.on("game_over", (data) => {
 
       console.log("game_over event received:", data);
@@ -114,7 +115,7 @@ export default function ResultScreen({ setScreen }) {
           transition={{ delay: 1.2, duration: 0.8 }}
           onClick={() => {
             socket.disconnect(); // bontja a kapcsolatot, ha új játék indulna
-            setScreen("home");
+            setScreen("lobby");
           }}
           className="mt-10 bg-blue-600 hover:bg-blue-700 px-8 py-3 rounded-lg text-white font-semibold shadow-md transition-transform hover:scale-105"
         >

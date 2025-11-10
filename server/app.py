@@ -231,13 +231,10 @@ def evaluate_answers(room_code, round_id):
     active = room["active_players"]
     answers = room.get("answers", {})
 
+    eliminated=[]
     survivors = [p for p in active if answers.get(p) == correct_answer]
-    eliminated = [p for p in active if p not in survivors]
+    
 
-    # Jelöljük, kik estek ki
-    for p in eliminated:
-        socketio.emit("player_eliminated", {"username": p}, room=room_code)
-    room["elimination_order"].extend(eliminated)
 
     room["active_players"] = survivors
 
@@ -248,6 +245,7 @@ def evaluate_answers(room_code, round_id):
     print(f"🏁 Survivors in {room_code}: {survivors}")
 
     if len(survivors) == 0:
+        
         print(f"⚠️ No one answered correctly in {room_code}. Keeping all players.")
 
         socketio.emit(
@@ -265,6 +263,13 @@ def evaluate_answers(room_code, round_id):
         room["active_players"] = active
         socketio.sleep(5)
         send_new_question(room_code)
+        return
+    eliminated = [p for p in active if p not in survivors]
+
+    # Jelöljük, kik estek ki
+    for p in eliminated:
+        socketio.emit("player_eliminated", {"username": p}, room=room_code)
+        room["elimination_order"].extend(eliminated)
 
     for p in survivors:
         room["player_stats"][p]["rounds_survived"] += 1
@@ -272,7 +277,8 @@ def evaluate_answers(room_code, round_id):
     if len(survivors) == 1:
         winner = survivors[0]
         room["player_stats"][winner]["eliminated_round"] = "WINNER"
-        ranking = [winner] + list(reversed(room.get("elimination_order", [])))
+        ranking = list(set((room.get("elimination_order", []))))
+        ranking.insert(0, winner)
 
         print(f"🏆 Game over! Winner: {winner}")
         print(f"Final Ranking: {ranking}")
