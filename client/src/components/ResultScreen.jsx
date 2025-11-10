@@ -1,11 +1,38 @@
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useState, useRef} from "react";
 import { socket } from "../utils/socket";
 import {motion, AnimatePresence} from "framer-motion";
+import confetti from "canvas-confetti";
 
 export default function ResultScreen({ setScreen }) {
   
   const [ranking, setRanking] = useState([]);
   const [winner, setWinner] = useState(null);
+
+useEffect(() => {
+  const duration = 3000;
+  const end = Date.now() + duration;
+
+  (function frame(){
+    confetti({
+      particleCount: 5,
+      angle: 60,
+      spread: 55,
+      origin: { x:0 },
+      colors: ['#ffcc00', '#ffffff', '#ff6600']
+    });
+    confetti({
+      particleCount: 5,
+      angle: 120,
+      spread: 55,
+      origin: {x:1},
+      colors: ['#ffcc00', '#ffffff', '#ff6600']
+    });
+
+    if (Date.now() <  end) {
+      requestAnimationFrame(frame)
+    }
+  })();
+ }, []);
 
   useEffect(() => {
 
@@ -37,6 +64,7 @@ export default function ResultScreen({ setScreen }) {
   }, []);
   
   return (
+    <div className="flex flex-col items-center justify-center h-screen bg-black text-white animate-fadeIn">
     <AnimatePresence>
       <motion.div
         key="result-screen"
@@ -54,7 +82,6 @@ export default function ResultScreen({ setScreen }) {
         >
           🏁 Játék vége!
         </motion.h1>
-
         {winner ? (
           <motion.p
             initial={{ opacity: 0 }}
@@ -113,6 +140,7 @@ export default function ResultScreen({ setScreen }) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.2, duration: 0.8 }}
+          whileHover={{ scale: 1.1 }}
           onClick={() => {
             socket.disconnect(); // bontja a kapcsolatot, ha új játék indulna
             setScreen("home");
@@ -123,5 +151,6 @@ export default function ResultScreen({ setScreen }) {
         </motion.button>
       </motion.div>
     </AnimatePresence>
+    </div>
   );
 }

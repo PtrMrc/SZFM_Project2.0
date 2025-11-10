@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef} from "react";
 import { socket } from "../utils/socket";
 import { Wheel } from "react-custom-roulette";
 import { motion } from "framer-motion";
+import confetti from "canvas-confetti";
 
 export default function GameScreen({ username, room, setScreen }) {
   const [question, setQuestion] = useState(null);
@@ -226,7 +227,9 @@ export default function GameScreen({ username, room, setScreen }) {
           onStopSpinning={() => {
             console.log("Kerék leállt");
             setShowTopic(true);
-            setTimeout(() => setSpinning(false), 2000);
+            setTimeout(() => {
+              setSpinning(false); 
+            }, 2000);
           }}
         />
       ) : (
