@@ -6,7 +6,7 @@ import threading
 import time
 
 app = Flask(__name__)
-socketio = SocketIO(app, cors_allowed_origins="*")
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
 question_timer_seconds=20
 
 @app.route('/')
@@ -32,7 +32,11 @@ def handle_join(data):
         emit("join_error", {"msg": f"A '{username}' nevű játékos már csatlakozott ehhez a szobához."})
         return
     
-    add_player(room_code, username)
+    if username not in room["players"]:
+        add_player(room_code, username)
+        room.setdefault("player_stats", {})
+        room["player_stats"][username] = {"eliminated_round": None, "rounds_survived": 0}
+
     join_room(room_code)
 
     print(f"✅ {username} joined {room_code}")
@@ -78,6 +82,8 @@ def handle_start(data):
     room["active_players"] = list(room["players"])
     room["answers"] = {}
     room["next_question_cache"] = None
+    room["elimination_order"] = []
+    room["player_stats"] = {p: {"rounds_survived": 0} for p in room["active_players"]}
 
     try:
         room["topics"] = get_all_topics()
@@ -231,8 +237,14 @@ def evaluate_answers(room_code, round_id):
     # Jelöljük, kik estek ki
     for p in eliminated:
         socketio.emit("player_eliminated", {"username": p}, room=room_code)
+    room["elimination_order"].extend(eliminated)
 
     room["active_players"] = survivors
+
+    socketio.emit("round_result",
+                  {"survivors": survivors, "eliminated": eliminated, "correct": correct_answer},
+                  room = room_code)
+
     print(f"🏁 Survivors in {room_code}: {survivors}")
 
     if len(survivors) == 0:
@@ -254,9 +266,16 @@ def evaluate_answers(room_code, round_id):
         socketio.sleep(5)
         send_new_question(room_code)
 
-    elif len(survivors) == 1:
+    for p in survivors:
+        room["player_stats"][p]["rounds_survived"] += 1
+
+    if len(survivors) == 1:
         winner = survivors[0]
+        room["player_stats"][winner]["eliminated_round"] = "WINNER"
+        ranking = [winner] + list(reversed(room.get("elimination_order", [])))
+
         print(f"🏆 Game over! Winner: {winner}")
+        print(f"Final Ranking: {ranking}")
 
         socketio.emit(
             "round_result",
@@ -269,7 +288,8 @@ def evaluate_answers(room_code, round_id):
             room=room_code,
         )
 
-        socketio.emit("game_over", {"winner": winner}, room=room_code)
+        socketio.emit("game_over", {"winner": winner, "ranking": ranking}, room=room_code)
+        room["status"] = "finished"
 
     else:
         socketio.emit(

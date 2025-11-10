@@ -111,9 +111,10 @@ export default function GameScreen({ username, room, setScreen }) {
  	    }
       setTimer(0);
         setRoundEndTime(null);
-        
+
       setTimeout(() => {
         setWinner(data.winner);
+        localStorage.setItem("finalResult", JSON.stringify(data));
         setTimeout(() => {setScreen("result");}, 4000);
       }, 5000);
       });
