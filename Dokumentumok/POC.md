@@ -12,3 +12,10 @@ AI játékos létrehozása
 
 ## Technológia
 - Cohere (vagy más mesterséges intelligencia) API használata
+
+## Időkeret
+- 8 óra
+- Előrehaladás esetén folytatás, egyébként az ötlet elvetése
+
+## Minimum elvárás
+- Bármilyen szintű AI válasz
