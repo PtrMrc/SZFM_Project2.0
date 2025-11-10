@@ -1,5 +1,7 @@
 import React, { useEffect, useState, useRef} from "react";
 import { socket } from "../utils/socket";
+import { Wheel } from "react-custom-roulette";
+import { motion } from "framer-motion";
 
 export default function GameScreen({ username, room, setScreen }) {
   const [question, setQuestion] = useState(null);
@@ -11,6 +13,26 @@ export default function GameScreen({ username, room, setScreen }) {
   const currentRoundId = useRef(null);
   const animationFrameId = useRef(null);
  const [roundEndTime, setRoundEndTime] = useState(null);
+
+ //Kerékpörgetés
+ const[spinning, setSpinning] = useState(false);
+ const[categories, setCategories] = useState([]);
+ const[prizeNumber, setPrizeNumber] = useState(0);
+ const[selectedCategory, setSelectedCategory] = useState(null);
+ const [showTopic, setShowTopic] = useState(false);
+
+  useEffect(() => {
+    fetch("https://opentdb.com/api_category.php")
+    .then((res) => res.json())
+    .then((data) => {
+      const formatted = data.trivia_categories.map((c) => ({
+        option: c.name,
+        id: c.id
+      }));
+      setCategories(formatted);
+    })
+    .catch((err) => console.error("Kategóriák lekérése sikertelen:", err));
+  }, []);
 
   useEffect(() => {
     const requestTimer = setTimeout(() => {
@@ -50,6 +72,14 @@ export default function GameScreen({ username, room, setScreen }) {
     }
 
     currentRoundId.current = data.round_id;
+    socket.on("spin_wheel", (data) => {
+      console.log("spin_wheel:", data);
+      setSelectedCategory(data.topic);
+      const idx = categories.findIndex(c => c.option === data.topic);
+      setPrizeNumber(idx >= 0 ? idx: 0);
+      setShowTopic(false);
+      setSpinning(true);
+    });
     setQuestion(data.question)
     setRoundEndTime(data.round_end_time); 
   	setRoundFeedback(null);
@@ -129,7 +159,7 @@ export default function GameScreen({ username, room, setScreen }) {
         cancelAnimationFrame(animationFrameId.current);
       }
     };
-  }, [username, room, setScreen,eliminated]);
+  }, [username, room, setScreen, eliminated, categories]);
 
    // Timer logic
   useEffect(() => {
@@ -173,6 +203,64 @@ export default function GameScreen({ username, room, setScreen }) {
       </div>
     );
   }
+
+  //Ha épp forog a kerék
+  if(spinning){
+    return(
+      <div className="flex flex-col items-center justify-center h-screen bg-gray-900 text-white transition-opacity duration-1000"
+      style={{ opacity: spinning ? 1 : 0 }}>
+      <h2 className="text-3xl mb-6 animate-pulse">🎡 A kerék forog...</h2>
+      {categories.length > 0 ? (
+        <Wheel
+          mustStartSpinning={spinning}
+          prizeNumber={prizeNumber}
+          data={categories}
+          outerBorderWidth={1}
+          spinDuration={2}
+          innerRadius={0}
+          backgroundColors={["#3B82F6", "#10B981", "#F59E0B", "#EF4444"]}
+          textColors={["#fff"]}
+          fontSize={9}
+          textDistance={60}
+          radiusLineWidth={0.2}
+          onStopSpinning={() => {
+            console.log("Kerék leállt");
+            setShowTopic(true);
+            setTimeout(() => setSpinning(false), 2000);
+          }}
+        />
+      ) : (
+        <p className="text-gray-400">Betöltés</p>
+      )}
+        <div className="h-20 flex items-center justify-center">
+          {selectedCategory && showTopic === true && (
+            <motion.div
+              className="mt-2 text-4xl font-extrabold text-yellow-400 text-center drop-shadow-lg"
+              initial={{ opacity: 0, scale: 0.3, rotate: -10 }}
+              animate={{
+                opacity: 1,
+                scale: [1.2, 1],
+                rotate: [5, 0],
+              }}
+              transition={{
+                duration: 1,
+                type: "spring",
+                stiffness: 100,
+                damping: 8,
+              }}
+              whileHover={{
+                scale: 1.1,
+                textShadow: "0px 0px 12px rgba(255, 230, 150, 0.9)",
+                transition: { duration: 0.6 },
+              }}
+            >
+              Téma: <span className="text-white">{selectedCategory}</span>
+            </motion.div>
+          )}</div>
+      </div>
+    );
+  }
+
 
   // 🔹 Ha még nincs kérdés
   if (!question) {

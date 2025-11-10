@@ -115,7 +115,7 @@ export default function ResultScreen({ setScreen }) {
           transition={{ delay: 1.2, duration: 0.8 }}
           onClick={() => {
             socket.disconnect(); // bontja a kapcsolatot, ha új játék indulna
-            setScreen("lobby");
+            setScreen("home");
           }}
           className="mt-10 bg-blue-600 hover:bg-blue-700 px-8 py-3 rounded-lg text-white font-semibold shadow-md transition-transform hover:scale-105"
         >

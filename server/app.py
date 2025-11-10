@@ -109,7 +109,8 @@ def send_new_question(room_code):
 
     if question:
         print(f"🧠 Using cached question for {room_code}")
-        room["next_question_cache"] = None 
+        room["next_question_cache"] = None
+        category_name = room.get("topic")
     else:
         print(f"⚠️ Cache was empty or invalid. Generating fresh question...")
         try:
@@ -121,12 +122,13 @@ def send_new_question(room_code):
             
 
             topic = spin_wheel(topics)
+            category_name = topic
             question = generate_question(topic, topics[topic])
             
             if not question:
                  raise Exception("Question generation returned None")
 
-            print(f"🧠 Generated fresh question for {room_code}")
+            print(f"🧠 Generated fresh question for {room_code} (Topic: {category_name})")
 
         except Exception as e:
             print(f"🆘 CRITICAL: Hiba történt a kérdés generálás közben: {e}. A játék {room_code} szobában megállhat.")
@@ -136,6 +138,14 @@ def send_new_question(room_code):
     room["answers"] = {}
     round_id = f"{room_code}_{int(time.time() * 1000)}"
     room["current_round_id"] = round_id
+
+    
+    socketio.emit("spin_wheel", {
+        "topic": category_name,
+        "timer": 12
+    }, room = room_code)
+
+    socketio.sleep(13)
     
     start_time = time.time()
     room["round_start_time"] = start_time
@@ -144,7 +154,8 @@ def send_new_question(room_code):
     print(f"🧠 Sending new question to {room_code}: {question['question']}")
 
     socketio.emit("new_question", {
-        "question": question, 
+        "question": question,
+        "category": category_name, 
         "timer": question_timer_seconds,
         "round_id": round_id,
         "round_end_time": room["round_end_time"]
@@ -169,6 +180,7 @@ def prefetch_next_question(room_code):
             room["topics"] = topics
 
         topic = spin_wheel(topics)
+        room["topic"] = topic
         question = generate_question(topic, topics[topic])
         
         if room and question:
@@ -352,4 +364,4 @@ def handle_request_current_question(data):
         }, room=request.sid)
 
 if __name__ == '__main__':
-    socketio.run(app, host='0.0.0.0', port=5000, debug=True,use_reloader=False)
+    socketio.run(app, host='0.0.0.0', port=5000, debug=False, use_reloader=False)
