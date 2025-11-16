@@ -1,0 +1,13 @@
+Scenario: A játékos létrehoz egy új szobát és host lesz
+
+Given a játékos megnyitja az alkalmazást
+And beírja a nevét
+When megad egy üres vagy új szobakódot
+Then a rendszer létrehoz egy új szobát számára
+And a játékos host szerepet kap
+
+When további játékosok ugyanazzal a kóddal csatlakoznak
+Then a rendszer ugyanabba a szobába irányítja őket
+
+When a host elindítja a játékot
+Then a játék minden játékos számára elkezdődik
