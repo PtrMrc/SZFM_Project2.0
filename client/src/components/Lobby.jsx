@@ -27,10 +27,13 @@ export default function Lobby({ username, room, setScreen }) {
     }
     });
 
+    socket.on("game_starting", () => {
+      setScreen("game");
+    });
+
     // 🔹 Csak logoljuk, ne állítsuk le az eseményt
     socket.on("new_question", () => {
-      console.log("🎮 Game starting – switching to GameScreen");
-      setScreen("game"); // átvisz a játékba, de a GameScreen is újra kér kérdést
+      console.log("🎮 Game starting – switching to GameScreen");// átvisz a játékba, de a GameScreen is újra kér kérdést
     });
 
     return () => {

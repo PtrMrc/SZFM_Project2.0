@@ -139,12 +139,10 @@ def send_new_question(room_code):
     round_id = f"{room_code}_{int(time.time() * 1000)}"
     room["current_round_id"] = round_id
 
-    
     socketio.emit("spin_wheel", {
         "topic": category_name,
         "timer": 12
-    }, room = room_code)
-
+        }, room = room_code)
     socketio.sleep(13)
     
     start_time = time.time()

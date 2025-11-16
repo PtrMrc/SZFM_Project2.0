@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef} from "react";
 import { socket } from "../utils/socket";
 import { Wheel } from "react-custom-roulette";
 import { motion } from "framer-motion";
-import confetti from "canvas-confetti";
+
 
 export default function GameScreen({ username, room, setScreen }) {
   const [question, setQuestion] = useState(null);
@@ -52,6 +52,15 @@ export default function GameScreen({ username, room, setScreen }) {
     socket.emit("join_room", { username, room });
     console.log("📡 Sent join_room from GameScreen:", { username, room });
 
+    socket.on("spin_wheel", (data) => {
+      console.log("spin_wheel:", data);
+      setSelectedCategory(data.topic);
+      const idx = categories.findIndex(c => c.option === data.topic);
+      setPrizeNumber(idx >= 0 ? idx: 0);
+      setShowTopic(false);
+      setSpinning(true);
+    });
+
     socket.on("new_question", (data) => {
     console.log("🧠 Új kérdés esemény érkezett:", data);
     if (!data || !data.question || !data.round_end_time || !data.round_id) {
@@ -73,14 +82,7 @@ export default function GameScreen({ username, room, setScreen }) {
     }
 
     currentRoundId.current = data.round_id;
-    socket.on("spin_wheel", (data) => {
-      console.log("spin_wheel:", data);
-      setSelectedCategory(data.topic);
-      const idx = categories.findIndex(c => c.option === data.topic);
-      setPrizeNumber(idx >= 0 ? idx: 0);
-      setShowTopic(false);
-      setSpinning(true);
-    });
+    
     setQuestion(data.question)
     setRoundEndTime(data.round_end_time); 
   	setRoundFeedback(null);
