@@ -1,0 +1,11 @@
+Scenario: A játék lezárul és megjelenik a ranglista
+
+Given a játék addig folytatódik, amíg csak egy játékos marad játékban
+When az utolsó játékos is továbbjut és a többiek kiestek
+Then a rendszer kihirdeti a nyertest
+
+Then a játék végén megjelenik a ranglista
+And minden játékos szerepel rajta a végső helyezésével
+
+When a játékosok visszatérnek a főmenübe
+Then új játékot vagy új szoba létrehozását választhatják
