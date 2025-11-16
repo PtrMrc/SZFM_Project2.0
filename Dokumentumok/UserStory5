@@ -1,0 +1,19 @@
+Scenario: A játékosok válaszolnak a kérdésre és továbbjutás történik
+
+Given a kérdés és a négy válaszopció megjelent minden játékos számára
+And 20 másodperc áll rendelkezésre a válaszadásra
+And minden játékos rendelkezik egy felezés segítséggel
+
+When egy játékos aktiválja a felezést
+Then a rendszer két rossz választ eltávolít számára
+
+When a játékosok elküldik a válaszaikat
+Then a rendszer kiértékeli azokat
+
+When legalább egy játékos helyesen válaszol
+Then a helyesen válaszolók továbbjutnak
+And a rosszul válaszolók kiesnek
+
+When senki sem találja el a helyes választ
+Then minden játékos bent marad
+And újra megpörög a szerencsekerék
