@@ -1,0 +1,8 @@
+Scenario: A szerencsekerék kiválasztja a következő kérdés témáját
+
+Given a játék elkezdődött
+When a rendszer megjeleníti a szerencsekereket
+And a kerék megpörög
+Then kiválasztódik egy témakör
+And az alkalmazás API-hívást küld az OpenTrivia Database felé a kiválasztott témával
+And a rendszer megjelenít egy véletlenszerű kérdést minden játékos számára
