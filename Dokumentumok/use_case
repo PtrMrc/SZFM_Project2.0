@@ -20,3 +20,57 @@ Host --> U4
 Játékos --> U5
 
 @enduml
+
+
+--------------------------
+@startuml Jatekmenet
+left to right direction
+
+actor Játékos
+actor "Open Trivia API" as API
+
+rectangle "Quiz Royale System" {
+    usecase UC_Kerd as "Kérdés lekérése (API-ból)"
+    usecase UC_Valasz as "Válaszadás (Időzített)"
+    usecase UC_Ert as "Válaszok kiértékelése"
+    usecase UC_Kies as "Kiesés logika"
+    usecase UC_Kor as "Új kör indítása"
+    usecase UC_Vege as "Játék vége"
+}
+
+Játékos --> UC_Valasz
+API <.. UC_Kerd
+
+UC_Valasz -down-> UC_Ert
+UC_Ert -down-> UC_Kies
+UC_Kies -down-> UC_Kor
+UC_Kies -down-> UC_Vege
+
+UC_Kor .up.> UC_Kerd : <<include>>
+
+@enduml
+----------------------------------------
+@startuml EredmenyekV2
+left to right direction
+
+actor Játékos
+actor Host
+Host -up-|> Játékos : "Specializáció"
+
+rectangle "Quiz Royale System" {
+    usecase U_Indit as "Játék indítása (Host)"
+    usecase U_Rang as "Ranglista generálás"
+    usecase U_Eredmeny as "ResultScreen megjelenítés"
+    usecase U_Tema as "Tematikus játékmód választása (V2.0)"
+    usecase U_Profil as "Profil kezelése (V2.0)"
+}
+
+Host --> U_Indit
+Játékos --> U_Eredmeny
+
+U_Rang -up-> U_Eredmeny
+U_Eredmeny --> U_Profil
+
+U_Indit <. U_Tema : <<extend>>
+
+@enduml
