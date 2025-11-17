@@ -140,3 +140,9 @@ A Quiz Royale célja ennek a folyamatnak a modernizálása, a következő módon
 ## 11. Use Case Diagram
 <img width="371" height="429" alt="image" src="https://github.com/user-attachments/assets/987a257d-4b59-4ba2-b69b-931ee1623f61" />
 
+<img width="1023" height="338" alt="image" src="https://github.com/user-attachments/assets/2082820a-b3a9-4901-92df-c6d8adb188a5" />
+
+<img width="927" height="393" alt="image" src="https://github.com/user-attachments/assets/ad4e7e97-bc42-4b98-8572-c0833a99f7b9" />
+
+
+
