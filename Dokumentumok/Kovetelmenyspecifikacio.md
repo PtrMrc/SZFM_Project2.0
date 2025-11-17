@@ -136,3 +136,7 @@ A Quiz Royale célja ennek a folyamatnak a modernizálása, a következő módon
 | **Reszponzív felület** | A weboldal automatikusan igazodik az eszköz (mobil, tablet, PC) képernyőméretéhez. |
 
 ---
+
+## 11. Use Case Diagram
+<img width="371" height="429" alt="image" src="https://github.com/user-attachments/assets/987a257d-4b59-4ba2-b69b-931ee1623f61" />
+
