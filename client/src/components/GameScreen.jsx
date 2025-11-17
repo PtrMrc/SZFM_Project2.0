@@ -13,14 +13,18 @@ export default function GameScreen({ username, room, setScreen }) {
   const [roundFeedback, setRoundFeedback] = useState(null);
   const currentRoundId = useRef(null);
   const animationFrameId = useRef(null);
- const [roundEndTime, setRoundEndTime] = useState(null);
+  const [roundEndTime, setRoundEndTime] = useState(null);
 
  //Kerékpörgetés
- const[spinning, setSpinning] = useState(false);
- const[categories, setCategories] = useState([]);
- const[prizeNumber, setPrizeNumber] = useState(0);
- const[selectedCategory, setSelectedCategory] = useState(null);
- const [showTopic, setShowTopic] = useState(false);
+  const[spinning, setSpinning] = useState(false);
+  const[categories, setCategories] = useState([]);
+  const[prizeNumber, setPrizeNumber] = useState(0);
+  const[selectedCategory, setSelectedCategory] = useState(null);
+  const [showTopic, setShowTopic] = useState(false);
+
+  //Segítség
+  const [usedHelp, setUsedHelp] = useState(false);
+  const [removedAnswers, setRemovedAnswers] = useState([]);
 
   useEffect(() => {
     fetch("https://opentdb.com/api_category.php")
@@ -152,11 +156,19 @@ export default function GameScreen({ username, room, setScreen }) {
       }, 5000);
       });
 
+    socket.on("help_result", (data) => {
+      console.log("🎯 HELP RESULT:", data);
+      setRemovedAnswers(data.removed_answers);
+    });
+
+
     return () => {
       socket.off("new_question");
       socket.off("round_result");
       socket.off("player_eliminated");
       socket.off("game_over");
+      socket.off("help_result");
+
 
     if (animationFrameId.current) {
         cancelAnimationFrame(animationFrameId.current);
@@ -189,6 +201,13 @@ export default function GameScreen({ username, room, setScreen }) {
       }
     };
   }, [roundEndTime]);
+
+  const useHelp = () => {
+    if (usedHelp || !question || eliminated) return;
+
+    socket.emit("use_help", { room, username });
+    setUsedHelp(true);
+  };
 
   const sendAnswer = (choice) => {
     if (answered || eliminated || timer <= 0) return;
@@ -293,17 +312,25 @@ export default function GameScreen({ username, room, setScreen }) {
       <p className="mb-4 text-gray-400">⏰ Hátralévő idő: {timer}s</p>
 
       <div className="grid grid-cols-2 gap-4 w-2/3">
-        {question.choices.map((choice, idx) => (
-          <button
-            key={idx}
-            onClick={() => sendAnswer(choice)}
-            disabled={answered}
-            className="bg-blue-700 hover:bg-blue-800 px-6 py-3 rounded-lg text-white font-semibold disabled:opacity-50"
-          >
-            {choice}
-          </button>
+        {question.choices
+          .filter(choice => !removedAnswers.includes(choice))
+          .map((choice, idx) => (
+            <button
+              key={idx}
+              onClick={() => sendAnswer(choice)}
+              disabled={answered}
+              className="bg-blue-700 hover:bg-blue-800 px-6 py-3 rounded-lg text-white font-semibold disabled:opacity-50"
+            >
+              {choice}
+            </button>
         ))}
       </div>
+      <button
+          onClick={useHelp}
+          disabled={usedHelp || answered || !question}
+          className="mt-10 mb-4 bg-purple-700 hover:bg-purple-800 px-6 py-3 rounded-lg text-white font-semibold disabled:opacity-50">
+            🧩 50-50 Segítség
+      </button>
 
       {/* 🔹 Feedback a kör végén */}
       {roundFeedback && (

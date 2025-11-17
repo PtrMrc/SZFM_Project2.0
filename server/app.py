@@ -4,6 +4,7 @@ from game.rooms import create_room, add_player, rooms
 from question_generator import spin_wheel, generate_question, get_all_topics
 import threading
 import time
+import random
 
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
@@ -31,11 +32,12 @@ def handle_join(data):
     if username in room["players"]:
         emit("join_error", {"msg": f"A '{username}' nevű játékos már csatlakozott ehhez a szobához."})
         return
-    
+
     if username not in room["players"]:
         add_player(room_code, username)
         room.setdefault("player_stats", {})
         room["player_stats"][username] = {"eliminated_round": None, "rounds_survived": 0}
+        room["player_stats"][username]["has_help"] = True
 
     join_room(room_code)
 
@@ -55,10 +57,10 @@ def handle_request_room_state(data):
     emit("room_state", {"players": room["players"], "host": room["host"]}, to=request.sid)
 
 def start_game_after_delay(room_code):
-    
+
     print(f"⏰ Várakozás (2s), hogy a {room_code} kliensei betöltsenek...")
     socketio.sleep(2) 
-    
+
     print(f"🚀 Játék indítása és első kérdés küldése ({room_code})")
     send_new_question(room_code)
 
@@ -83,7 +85,10 @@ def handle_start(data):
     room["answers"] = {}
     room["next_question_cache"] = None
     room["elimination_order"] = []
-    room["player_stats"] = {p: {"rounds_survived": 0} for p in room["active_players"]}
+    room["player_stats"] = {
+        p: {"rounds_survived": 0, "has_help": True}
+        for p in room["active_players"]
+    }
 
     try:
         room["topics"] = get_all_topics()
@@ -352,14 +357,35 @@ def handle_request_current_question(data):
 
     if question and round_id and end_time:
         remaining = max(0, end_time - time.time())
-        
+
         print(f"📨 {request.sid} requested current question, {remaining:.1f}s remaining")
         socketio.emit("new_question", {
-            "question": question, 
+            "question": question,
             "timer": int(remaining),
             "round_id": round_id,
             "round_end_time": end_time
         }, room=request.sid)
+
+
+@socketio.on("use_help")
+def handle_use_help(data):
+    room_code = data.get("room")
+    room = rooms[room_code]
+    question = room.get("current_question")
+    # username = data.get("username")
+
+    # Get current question
+
+    correct = question["correct"]
+    choices = question["choices"]
+
+    # Pick 2 wrong answers randomly
+    wrong_answers = [c for c in choices if c != correct]
+    removed = random.sample(wrong_answers, 2)
+
+    # Emit back to ONLY that user
+    emit("help_result", {"removed_answers": removed}, room=request.sid)
+
 
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=5000, debug=False, use_reloader=False)
