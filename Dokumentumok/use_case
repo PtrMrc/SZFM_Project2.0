@@ -1,0 +1,22 @@
+@startuml SzobaKezeles
+left to right direction
+
+actor Host
+actor Játékos
+
+rectangle "Quiz Royale System" {
+    usecase U1 as "Szoba létrehozása"
+    usecase U2 as "Csatlakozás szobához"
+    usecase U3 as "Lobby megjelenítés"
+    usecase U4 as "Játék indítása"
+    usecase U5 as "Kilépés főmenübe"
+}
+
+Host --> U1
+Játékos --> U2
+Host -right-> U3
+Játékos -right-> U3
+Host --> U4
+Játékos --> U5
+
+@enduml
