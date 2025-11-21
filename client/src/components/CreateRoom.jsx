@@ -15,6 +15,13 @@ export default function CreateRoom({ onCreate }) {
 
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-gray-900 text-white">
+      <button
+        onClick={() => window.location.reload()}
+        className="absolute top-8 left-8 bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg"
+      >
+        ← Vissza
+      </button>
+
       <h2 className="text-3xl font-bold mb-6">🛠️ Szoba létrehozása</h2>
 
       <input

@@ -6,13 +6,17 @@ import threading
 import time
 import random
 
+solo_games = {}
+
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
+app.config['PROPAGATE_EXCEPTIONS'] = True
 question_timer_seconds=20
 
 @app.route('/')
 def index():
-    return "Quiz Royale backend is running!"
+    from flask import jsonify
+    return jsonify({"status": "Quiz Royale backend is running!"})
 
 @socketio.on("join_room")
 def handle_join(data):
@@ -55,6 +59,39 @@ def handle_request_room_state(data):
 
     room = rooms[room_code]
     emit("room_state", {"players": room["players"], "host": room["host"]}, to=request.sid)
+
+@socketio.on("start_solo_game")
+def handle_start_solo(data):
+    username = data.get("username")
+    num_questions = data.get("num_questions", 10)
+    ai_difficulty = data.get("ai_difficulty", 50)
+
+    session_id = f"solo_{username}_{int(time.time() * 1000)}"
+
+    try:
+        topics = get_all_topics()
+    except Exception as e:
+        emit("error", {"msg": f"Failed to fetch topics: {e}"})
+        return
+
+    solo_games[session_id] = {
+        "username": username,
+        "num_questions": num_questions,
+        "ai_difficulty": ai_difficulty,
+        "current_round": 0,
+        "player_score": 0,
+        "ai_score": 0,
+        "topics": topics,
+        "status": "in-progress",
+        "player_answered": False,
+        "ai_answered": False,
+        "next_question_cache": None
+    }
+
+    emit("solo_game_created", {"session_id": session_id}, to=request.sid)
+    print(f"🎮 Solo game created: {session_id} for {username}")
+
+    socketio.start_background_task(target=send_solo_question, session_id=session_id, player_sid=request.sid)
 
 def start_game_after_delay(room_code):
 
@@ -211,45 +248,60 @@ def handle_answer(data):
     if round_id != room.get("current_round_id"):
         print(f"⚠️ {username} sent answer for old round {round_id}, ignoring")
         return
-    
+
     if time.time() > room.get("round_end_time", 0):
         print(f"⏰ {username}'s answer arrived too late")
         return
-    
+
     if username not in room["answers"]:
         room["answers"][username] = answer
         print(f"📝 {username} answered {answer}")
+
+@socketio.on("solo_answer")
+def handle_solo_answer(data):
+    session_id = data.get("session_id")
+    answer = data.get("answer")
+    round_id = data.get("round_id")
+
+    game = solo_games.get(session_id)
+    if not game or game["current_round_id"] != round_id:
+        return
+
+    if time.time() > game.get("round_end_time", 0):
+        return
+
+    game["player_answer"] = answer
+    game["player_answered"] = True
+    print(f"📝 Solo player answered: {answer}")
 
 def evaluate_answers(room_code, round_id):
     """x mp után automatikus kiértékelés"""
     room = rooms.get(room_code)
     if not room:
         return
-    
+
     end_time = room.get("round_end_time", 0)
     wait_time = end_time - time.time()
-    
+
     if wait_time > 0:
         socketio.sleep(wait_time) 
-    
+
     if room.get("current_round_id") != round_id:
         print(f"🧟 Zombie timer for {room_code}/{round_id} detected. Aborting.")
         return
-    
+
     print(f"✅ Evaluating round {round_id} for {room_code}...")
 
     question = room.get("current_question")
     if not question:
         return
-    
+
     correct_answer =question["correct"]
     active = room["active_players"]
     answers = room.get("answers", {})
 
     eliminated=[]
     survivors = [p for p in active if answers.get(p) == correct_answer]
-    
-
 
     room["active_players"] = survivors
 
@@ -260,7 +312,7 @@ def evaluate_answers(room_code, round_id):
     print(f"🏁 Survivors in {room_code}: {survivors}")
 
     if len(survivors) == 0:
-        
+
         print(f"⚠️ No one answered correctly in {room_code}. Keeping all players.")
 
         socketio.emit(
@@ -326,6 +378,86 @@ def evaluate_answers(room_code, round_id):
         socketio.sleep(5) 
         send_new_question(room_code)
 
+def evaluate_solo_round(session_id, player_sid, round_id):
+    """Evaluate solo game round"""
+    game = solo_games.get(session_id)
+    if not game:
+        return
+
+    end_time = game.get("round_end_time", 0)
+    wait_time = end_time - time.time()
+
+    if wait_time > 0:
+        socketio.sleep(wait_time)
+
+    if game.get("current_round_id") != round_id:
+        return
+
+    question = game.get("current_question")
+    correct_answer = question["correct"]
+
+    # Player result
+    player_answer = game.get("player_answer")
+    player_correct = player_answer == correct_answer
+
+    # AI decision based on difficulty
+    ai_correct = random.randint(1, 100) <= game["ai_difficulty"]
+
+    if player_correct:
+        game["player_score"] += 1
+    if ai_correct:
+        game["ai_score"] += 1
+
+    socketio.emit("solo_round_result", {
+        "player_correct": player_correct,
+        "ai_correct": ai_correct,
+        "correct_answer": correct_answer,
+        "player_score": game["player_score"],
+        "ai_score": game["ai_score"],
+        "round_id": round_id
+    }, to=player_sid)
+
+    socketio.sleep(5)
+
+    # Send next question or end game
+    if game["current_round"] < game["num_questions"]:
+        send_solo_question(session_id, player_sid)
+    else:
+        end_solo_game(session_id, player_sid)
+
+def prefetch_solo_question(session_id, delay_seconds):
+    """Prefetch next question for solo game"""
+    socketio.sleep(delay_seconds)
+
+    game = solo_games.get(session_id)
+    if not game or game.get("status") != "in-progress":
+        return
+
+    topics = game.get("topics")
+    topic = spin_wheel(topics)
+    game["topic"] = topic
+    question = generate_question(topic, topics[topic])
+
+    if game and question:
+        game["next_question_cache"] = question
+
+def end_solo_game(session_id, player_sid):
+    """End solo game and send results"""
+    game = solo_games.get(session_id)
+    if not game:
+        return
+
+    game["status"] = "finished"
+
+    socketio.emit("solo_game_over", {
+        "player_score": game["player_score"],
+        "ai_score": game["ai_score"],
+        "total_questions": game["num_questions"],
+        "winner": "player" if game["player_score"] > game["ai_score"] else "ai" if game["ai_score"] > game["player_score"] else "tie"
+    }, to=player_sid)
+
+    print(f"🏁 Solo game ended: {session_id} - Player: {game['player_score']}, AI: {game['ai_score']}")
+
 def delayed_next_question(room_code, delay):
     """Send next question after delay without blocking"""
     socketio.sleep(delay)
@@ -336,13 +468,72 @@ def delayed_next_question(room_code, delay):
 def delayed_prefetch(room_code, delay_seconds):
     print(f"⏰ Prefetch timer started for {room_code}, will run in {delay_seconds}s...")
     socketio.sleep(delay_seconds)
-    
+
     room = rooms.get(room_code)
     if room and room.get("status") == "in-progress":
         print(f"🚀 Running delayed prefetch for {room_code}")
         prefetch_next_question(room_code)
     else:
         print(f"ℹ️ Delayed prefetch for {room_code} cancelled (game not in progress).")
+
+def send_solo_question(session_id, player_sid):
+    """Send a new question in solo mode"""
+    socketio.sleep(2)  # Brief delay
+
+    game = solo_games.get(session_id)
+    if not game:
+        return
+
+    game["current_round"] += 1
+
+    if game["current_round"] > game["num_questions"]:
+        # Game over
+        end_solo_game(session_id, player_sid)
+        return
+
+    # Get question (from cache or generate new)
+    question = game.get("next_question_cache")
+
+    if question:
+        category_name = game.get("topic")
+        game["next_question_cache"] = None
+    else:
+        topics = game.get("topics")
+        topic = spin_wheel(topics)
+        category_name = topic
+        question = generate_question(topic, topics[topic])
+
+    game["current_question"] = question
+    game["player_answered"] = False
+    game["ai_answered"] = False
+    round_id = f"{session_id}_{game['current_round']}"
+    game["current_round_id"] = round_id
+
+    # Send wheel spin
+    socketio.emit("spin_wheel", {"topic": category_name, "timer": 12}, to=player_sid)
+    socketio.sleep(13)
+
+    # Send question
+    start_time = time.time()
+    game["round_end_time"] = start_time + question_timer_seconds
+
+    socketio.emit("solo_question", {
+        "question": question,
+        "category": category_name,
+        "timer": question_timer_seconds,
+        "round_id": round_id,
+        "round_end_time": game["round_end_time"],
+        "current_round": game["current_round"],
+        "total_rounds": game["num_questions"],
+        "player_score": game["player_score"],
+        "ai_score": game["ai_score"]
+    }, to=player_sid)
+
+    # Prefetch next question
+    socketio.start_background_task(target=prefetch_solo_question, session_id=session_id, delay_seconds=7)
+
+    # Evaluate after timer
+    socketio.start_background_task(target=evaluate_solo_round, session_id=session_id, player_sid=player_sid, round_id=round_id)
 
 @socketio.on("request_current_question")
 def handle_request_current_question(data):

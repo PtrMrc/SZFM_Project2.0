@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useRef} from "react";
+import React, {useEffect, useState} from "react";
 import { socket } from "../utils/socket";
 import {motion, AnimatePresence} from "framer-motion";
 import confetti from "canvas-confetti";
@@ -142,8 +142,9 @@ useEffect(() => {
           transition={{ delay: 1.2, duration: 0.8 }}
           whileHover={{ scale: 1.1 }}
           onClick={() => {
-            socket.disconnect(); // bontja a kapcsolatot, ha új játék indulna
-            setScreen("home");
+            socket.disconnect();
+            localStorage.removeItem("finalResult");
+            window.location.href = "/"; // Forces full reload to go back to home
           }}
           className="mt-10 bg-blue-600 hover:bg-blue-700 px-8 py-3 rounded-lg text-white font-semibold shadow-md transition-transform hover:scale-105"
         >
