@@ -29,7 +29,7 @@ export default function HomeScreen({ setScreen, setGameMode }) {
         transition={{ delay: 0.3, duration: 0.8 }}
         className="text-xl text-gray-300 mb-12"
       >
-        Válassz játékmódot!
+        Choose a game mode!
       </motion.p>
 
       <div className="flex gap-8">
@@ -42,12 +42,12 @@ export default function HomeScreen({ setScreen, setGameMode }) {
           onClick={handleMultiplayer}
         >
           <div className="text-6xl mb-4 text-center">👥</div>
-          <h2 className="text-2xl font-bold mb-3 text-center">Többjátékos</h2>
+          <h2 className="text-2xl font-bold mb-3 text-center">Multiplayer</h2>
           <p className="text-gray-400 text-center mb-4">
-            Játssz barátaiddal vagy online játékosokkal!
+            Play with your friends or anyone online!
           </p>
           <button className="w-full bg-blue-600 hover:bg-blue-700 py-3 rounded-lg font-semibold transition-colors">
-            Indítás
+            Start
           </button>
         </motion.div>
 
@@ -60,12 +60,12 @@ export default function HomeScreen({ setScreen, setGameMode }) {
           onClick={handleSolo}
         >
           <div className="text-6xl mb-4 text-center">🤖</div>
-          <h2 className="text-2xl font-bold mb-3 text-center">Egyedül (AI ellen)</h2>
+          <h2 className="text-2xl font-bold mb-3 text-center">Solo</h2>
           <p className="text-gray-400 text-center mb-4">
-            Mérj össze egy AI ellenféllel!
+            Play against the computer and improve your skills!
           </p>
           <button className="w-full bg-purple-600 hover:bg-purple-700 py-3 rounded-lg font-semibold transition-colors">
-            Indítás
+            Start
           </button>
         </motion.div>
       </div>

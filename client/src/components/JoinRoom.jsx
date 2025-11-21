@@ -10,10 +10,10 @@ export default function JoinRoom({ onJoin }) {
     useEffect(() => {
     socket.on("join_success", (data) => {
       console.log("✅ Successfully joined:", data);
-      setSuccessMsg(data.msg || "Sikeresen csatlakoztál!");
+      setSuccessMsg(data.msg || "Successfully joined!");
       setErrorMsg("");
 
-      
+
       setTimeout(() => {
         onJoin(room, username);
       }, 2000);
@@ -21,7 +21,7 @@ export default function JoinRoom({ onJoin }) {
 
     socket.on("join_error", (data) => {
       console.warn("Join error:", data);
-      setErrorMsg(data.msg || "Ismeretlen hiba történt.");
+      setErrorMsg(data.msg || "Join error occurred.");
       setSuccessMsg("");
     });
 
@@ -32,7 +32,7 @@ export default function JoinRoom({ onJoin }) {
   }, [room, username, onJoin]);
 
   const handleJoin = () => {
-  if (!username || !room) return alert("Add meg a neved és a szobakódot!");
+  if (!username || !room) return alert("Choose a username and room code!");
 
   setErrorMsg("");
 
@@ -45,14 +45,14 @@ export default function JoinRoom({ onJoin }) {
         onClick={() => window.location.reload()}
         className="absolute top-8 left-8 bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg"
       >
-        ← Vissza
+        ← Back
       </button>
 
-      <h2 className="text-3xl font-bold mb-6">Csatlakozás a szobához</h2>
+      <h2 className="text-3xl font-bold mb-6">Join room</h2>
 
       <input
         type="text"
-        placeholder="Felhasználónév"
+        placeholder="Name"
         value={username}
         onChange={(e) => setUsername(e.target.value)}
         className="w-64 p-2 mb-3 rounded bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -60,7 +60,7 @@ export default function JoinRoom({ onJoin }) {
 
       <input
         type="text"
-        placeholder="Szobakód"
+        placeholder="Room Code"
         value={room}
         onChange={(e) => setRoom(e.target.value.toUpperCase())}
         className="w-64 p-2 mb-4 rounded bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -70,7 +70,7 @@ export default function JoinRoom({ onJoin }) {
         onClick={handleJoin}
         className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg text-white font-semibold"
       >
-        Csatlakozás
+        Join
       </button>
 
       {errorMsg && (

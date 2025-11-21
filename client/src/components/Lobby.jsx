@@ -22,7 +22,7 @@ export default function Lobby({ username, room, setScreen }) {
       setHost(data.host);
 
     if (data.new_player && data.new_player !== username) {
-      setJoinMessage(`👋 ${data.new_player} csatlakozott a szobához!`);
+      setJoinMessage(`👋 ${data.new_player} joined the room!`);
       setTimeout(() => setJoinMessage(""), 2000);
     }
     });
@@ -49,11 +49,11 @@ export default function Lobby({ username, room, setScreen }) {
 
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-gray-900 text-white">
-      <h2 className="text-3xl font-bold mb-4">Szoba: {room}</h2>
+      <h2 className="text-3xl font-bold mb-4">Room: {room}</h2>
       <p className="text-gray-400 mb-4">Host: {host}</p>
 
       <div className="bg-gray-800 p-4 rounded-lg w-72 shadow-md">
-        <h3 className="text-lg mb-3 font-semibold text-center">👥 Játékosok:</h3>
+        <h3 className="text-lg mb-3 font-semibold text-center">👥 Players:</h3>
         <ul className="space-y-2">
           {players.map((p, i) => (
             <li
@@ -74,7 +74,7 @@ export default function Lobby({ username, room, setScreen }) {
           onClick={startGame}
           className="mt-8 bg-green-600 hover:bg-green-700 px-6 py-3 rounded-lg text-white font-semibold"
         >
-          🎮 Játék indítása
+          🎮 Start game
         </button>
       )}
       {joinMessage && (

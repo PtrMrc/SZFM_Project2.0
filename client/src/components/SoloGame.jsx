@@ -93,10 +93,10 @@ export default function SoloGameScreen({ username, sessionId, setScreen }) {
       setPlayerScore(data.player_score);
       setAiScore(data.ai_score);
 
-      const playerResult = data.player_correct ? "✅ Helyes válasz!" : `❌ Rossz válasz! Helyes: ${data.correct_answer}`;
-      const aiResult = data.ai_correct ? "AI: ✅ Helyes" : "AI: ❌ Rossz";
+      const playerResult = data.player_correct ? "✅ Correct!" : `❌ Incorrect! Correct: ${data.correct_answer}`;
+      const aiResult = data.ai_correct ? "AI: ✅ Correct" : "AI: ❌ Incorrect";
 
-      setRoundFeedback(`${playerResult}\n${aiResult}\n\n📊 Állás: Te ${data.player_score} - ${data.ai_score} AI`);
+      setRoundFeedback(`${playerResult}\n${aiResult}\n\n📊 Score: You ${data.player_score} - ${data.ai_score} AI`);
 
       setTimeout(() => setRoundFeedback(null), 5000);
     });
@@ -173,7 +173,7 @@ export default function SoloGameScreen({ username, sessionId, setScreen }) {
   if (spinning) {
     return (
       <div className="flex flex-col items-center justify-center h-screen bg-gray-900 text-white">
-        <h2 className="text-3xl mb-6 animate-pulse">🎡 A kerék forog...</h2>
+        <h2 className="text-3xl mb-6 animate-pulse">🎡 The wheel of fortune</h2>
         {categories.length > 0 ? (
           <Wheel
             mustStartSpinning={spinning}
@@ -195,7 +195,7 @@ export default function SoloGameScreen({ username, sessionId, setScreen }) {
             }}
           />
         ) : (
-          <p className="text-gray-400">Betöltés...</p>
+          <p className="text-gray-400">Loading...</p>
         )}
         <div className="h-20 flex items-center justify-center">
           {selectedCategory && showTopic && (
@@ -205,7 +205,7 @@ export default function SoloGameScreen({ username, sessionId, setScreen }) {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 1, type: "spring" }}
             >
-              Téma: <span className="text-white">{selectedCategory}</span>
+              Topic: <span className="text-white">{selectedCategory}</span>
             </motion.div>
           )}
         </div>
@@ -217,8 +217,8 @@ export default function SoloGameScreen({ username, sessionId, setScreen }) {
   if (!question) {
     return (
       <div className="flex flex-col items-center justify-center h-screen text-white bg-gray-900">
-        <h2 className="text-3xl mb-4">⏳ Várakozás a kérdésre...</h2>
-        <p className="text-gray-400">AI ellenfél előkészítése...</p>
+        <h2 className="text-3xl mb-4">⏳ Waiting for the question...</h2>
+        <p className="text-gray-400">AI opponent loading...</p>
       </div>
     );
   }
@@ -228,10 +228,10 @@ export default function SoloGameScreen({ username, sessionId, setScreen }) {
       {/* Score header */}
       <div className="absolute top-8 left-0 right-0 flex justify-center gap-8 text-xl font-bold">
         <div className="bg-blue-600 px-6 py-2 rounded-lg">
-          👤 Te: {playerScore}
+          👤 You: {playerScore}
         </div>
         <div className="bg-gray-700 px-4 py-2 rounded-lg">
-          Kör {currentRound}/{totalRounds}
+          Round {currentRound}/{totalRounds}
         </div>
         <div className="bg-purple-600 px-6 py-2 rounded-lg">
           🤖 AI: {aiScore}
@@ -239,7 +239,7 @@ export default function SoloGameScreen({ username, sessionId, setScreen }) {
       </div>
 
       <h2 className="text-2xl mb-6 mt-20">{question.question}</h2>
-      <p className="mb-4 text-gray-400">⏰ Hátralévő idő: {timer}s</p>
+      <p className="mb-4 text-gray-400">⏰ Time remaining: {timer}s</p>
 
       <div className="grid grid-cols-2 gap-4 w-2/3">
         {question.choices.map((choice, idx) => (
@@ -264,7 +264,7 @@ export default function SoloGameScreen({ username, sessionId, setScreen }) {
       )}
 
       {answered && !roundFeedback && (
-        <p className="mt-6 text-gray-400">✅ Válasz elküldve, AI dönt... ✅</p>
+        <p className="mt-6 text-gray-400">✅ Answer sent, AI answering... ✅</p>
       )}
     </div>
   );

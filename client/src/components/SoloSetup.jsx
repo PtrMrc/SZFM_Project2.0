@@ -8,7 +8,7 @@ export default function SoloSetup({ username, setUsername, onStart }) {
   const [isCreating, setIsCreating] = useState(false);
 
   const handleStart = () => {
-    if (!username) return alert("Add meg a nevedet!");
+    if (!username) return alert("Choose a name!");
 
     setIsCreating(true);
 
@@ -24,7 +24,7 @@ export default function SoloSetup({ username, setUsername, onStart }) {
     });
 
     socket.once("error", (data) => {
-      alert(data.msg || "Hiba történt!");
+      alert(data.msg || "Something went wrong!");
       setIsCreating(false);
     });
   };
@@ -37,13 +37,13 @@ export default function SoloSetup({ username, setUsername, onStart }) {
         transition={{ duration: 0.5 }}
         className="bg-gray-800 p-8 rounded-2xl shadow-2xl w-96"
       >
-        <h2 className="text-3xl font-bold mb-6 text-center">🤖 Solo mód beállítása</h2>
+        <h2 className="text-3xl font-bold mb-6 text-center">🤖 Settings</h2>
 
         <div className="mb-4">
-          <label className="block text-sm font-semibold mb-2">Felhasználónév</label>
+          <label className="block text-sm font-semibold mb-2">Name</label>
           <input
             type="text"
-            placeholder="Add meg a neved"
+            placeholder="Choose a name!"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             className="w-full p-3 rounded bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
@@ -52,7 +52,7 @@ export default function SoloSetup({ username, setUsername, onStart }) {
 
         <div className="mb-4">
           <label className="block text-sm font-semibold mb-2">
-            Kérdések száma: <span className="text-purple-400">{numQuestions}</span>
+            Number of questions: <span className="text-purple-400">{numQuestions}</span>
           </label>
           <input
             type="range"
@@ -70,7 +70,7 @@ export default function SoloSetup({ username, setUsername, onStart }) {
 
         <div className="mb-6">
           <label className="block text-sm font-semibold mb-2">
-            AI nehézség: <span className="text-purple-400">{aiDifficulty}%</span>
+            AI difficulty: <span className="text-purple-400">{aiDifficulty}%</span>
           </label>
           <input
             type="range"
@@ -87,9 +87,9 @@ export default function SoloSetup({ username, setUsername, onStart }) {
             <span>90%</span>
           </div>
           <p className="text-xs text-gray-400 mt-2 text-center">
-            {aiDifficulty <= 30 && "🟢 Könnyű"}
-            {aiDifficulty > 30 && aiDifficulty <= 60 && "🟡 Közepes"}
-            {aiDifficulty > 60 && "🔴 Nehéz"}
+            {aiDifficulty <= 30 && "🟢 Easy"}
+            {aiDifficulty > 30 && aiDifficulty <= 60 && "🟡 Medium"}
+            {aiDifficulty > 60 && "🔴 Hard"}
           </p>
         </div>
 
@@ -98,7 +98,7 @@ export default function SoloSetup({ username, setUsername, onStart }) {
           disabled={isCreating}
           className="w-full bg-purple-600 hover:bg-purple-700 py-3 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
-          {isCreating ? "⏳ Indítás..." : "🚀 Játék indítása"}
+          {isCreating ? "⏳ Initializing..." : "🚀 Start game"}
         </button>
       </motion.div>
     </div>

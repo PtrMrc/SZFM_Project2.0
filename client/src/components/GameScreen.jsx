@@ -45,7 +45,7 @@ export default function GameScreen({ username, room, setScreen }) {
             console.log("❓ Still no question, requesting from server...");
             socket.emit("request_current_question", {room});
         }
-    }, 3000);   
+    }, 3000);
     return () => {
         clearTimeout(requestTimer);
     };
@@ -86,11 +86,11 @@ export default function GameScreen({ username, room, setScreen }) {
     }
 
     currentRoundId.current = data.round_id;
-    
+
     setQuestion(data.question)
-    setRoundEndTime(data.round_end_time); 
+    setRoundEndTime(data.round_end_time);
   	setRoundFeedback(null);
-    setTimer(data.timer); 
+    setTimer(data.timer);
     setAnswered(false);
 
     console.log(`⏱️ New round ${data.round_id} started with ${data.timer}s`);
@@ -112,10 +112,10 @@ export default function GameScreen({ username, room, setScreen }) {
       const eliminatedCount = data.eliminated.length;
       const survivorCount = data.survivors.length;
       const noRightAnswers=data.message;
-      const statsMessage = `\n(Kiesettek: ${eliminatedCount}, Túlélők: ${survivorCount})`;
+      const statsMessage = `\n(Eliminated: ${eliminatedCount}, Survivors: ${survivorCount})`;
 
       if (noRightAnswers) {
-        setRoundFeedback(`${noRightAnswers}\n (A helyes válasz: ${data.correct}) ${statsMessage}`);
+        setRoundFeedback(`${noRightAnswers}\n (Correct answer: ${data.correct}) ${statsMessage}`);
         setTimeout(() => setRoundFeedback(null), 5000);
 
       } else
@@ -124,15 +124,15 @@ export default function GameScreen({ username, room, setScreen }) {
         const isSurvivor = data.survivors.includes(username);
 
         if (isEliminated) {
-          setRoundFeedback(`❌ Rossz válasz! Kiestél! A helyes: ${data.correct}`);
+          setRoundFeedback(`❌ Incorrect! Eliminated! Correct answer: ${data.correct}`);
           setTimeout(() => {setEliminated(true);}, 5000);
 
         } else if (isSurvivor) {
-          setRoundFeedback(`✅ Helyes válasz! ${statsMessage}`);
+          setRoundFeedback(`✅ Correct! ${statsMessage}`);
           setTimeout(() => setRoundFeedback(null), 5000);
 
         } else {
-          setRoundFeedback("⏰ Nem válaszoltál időben!");
+          setRoundFeedback("⏰ Timeout!");
           setTimeout(() => {setEliminated(true);}, 5000);
         }
       }
@@ -182,13 +182,13 @@ export default function GameScreen({ username, room, setScreen }) {
       const updateTimer = () => {
         const nowInSeconds = Date.now() / 1000;
         const remaining = Math.max(0, roundEndTime - nowInSeconds);
-        
-        setTimer(Math.ceil(remaining)); 
+
+        setTimer(Math.ceil(remaining));
 
         if (remaining > 0) {
           animationFrameId.current = requestAnimationFrame(updateTimer);
         } else {
-          setTimer(0); 
+          setTimer(0);
         }
       };
 
@@ -220,8 +220,8 @@ export default function GameScreen({ username, room, setScreen }) {
   if (eliminated) {
     return (
       <div className="flex flex-col items-center justify-center h-screen text-white bg-red-800">
-        <h2 className="text-3xl font-bold mb-4">❌ Kiestél!</h2>
-        <p>Várd meg, amíg a játék véget ér...</p>
+        <h2 className="text-3xl font-bold mb-4">❌ Eliminated!</h2>
+        <p>Please wait for the game to end...</p>
       </div>
     );
   }
@@ -231,7 +231,7 @@ export default function GameScreen({ username, room, setScreen }) {
     return(
       <div className="flex flex-col items-center justify-center h-screen bg-gray-900 text-white transition-opacity duration-1000"
       style={{ opacity: spinning ? 1 : 0 }}>
-      <h2 className="text-3xl mb-6 animate-pulse">🎡 A kerék forog...</h2>
+      <h2 className="text-3xl mb-6 animate-pulse">🎡 The wheel of fortune</h2>
       {categories.length > 0 ? (
         <Wheel
           mustStartSpinning={spinning}
@@ -249,12 +249,12 @@ export default function GameScreen({ username, room, setScreen }) {
             console.log("Kerék leállt");
             setShowTopic(true);
             setTimeout(() => {
-              setSpinning(false); 
+              setSpinning(false);
             }, 2000);
           }}
         />
       ) : (
-        <p className="text-gray-400">Betöltés</p>
+        <p className="text-gray-400">Loading</p>
       )}
         <div className="h-20 flex items-center justify-center">
           {selectedCategory && showTopic === true && (
@@ -278,7 +278,7 @@ export default function GameScreen({ username, room, setScreen }) {
                 transition: { duration: 0.6 },
               }}
             >
-              Téma: <span className="text-white">{selectedCategory}</span>
+              Topic: <span className="text-white">{selectedCategory}</span>
             </motion.div>
           )}</div>
       </div>
@@ -290,7 +290,7 @@ export default function GameScreen({ username, room, setScreen }) {
   if (!question) {
     return (
       <div className="flex flex-col items-center justify-center h-screen text-white">
-        <h2 className="text-3xl">⏳ Várakozás a kérdésre...</h2>
+        <h2 className="text-3xl">⏳ Waiting for the question...</h2>
       </div>
     );
   }
@@ -300,7 +300,7 @@ export default function GameScreen({ username, room, setScreen }) {
     return (
       <div className="flex flex-col items-center justify-center h-screen bg-green-800 text-white">
         <h2 className="text-4xl font-bold">
-          🏆 Győztes: {winner || "Senki"} 🎉
+          🏆 The winner is: {winner || "Nobody"} 🎉
         </h2>
       </div>
     );
@@ -309,7 +309,7 @@ export default function GameScreen({ username, room, setScreen }) {
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-gray-900 text-white">
       <h2 className="text-2xl mb-6">{question.question}</h2>
-      <p className="mb-4 text-gray-400">⏰ Hátralévő idő: {timer}s</p>
+      <p className="mb-4 text-gray-400">⏰ Time remaining: {timer}s</p>
 
       <div className="grid grid-cols-2 gap-4 w-2/3">
         {question.choices
@@ -329,7 +329,7 @@ export default function GameScreen({ username, room, setScreen }) {
           onClick={useHelp}
           disabled={usedHelp || answered || !question}
           className="mt-10 mb-4 bg-purple-700 hover:bg-purple-800 px-6 py-3 rounded-lg text-white font-semibold disabled:opacity-50">
-            🧩 50-50 Segítség
+            🧩 Help: 50-50
       </button>
 
       {/* 🔹 Feedback a kör végén */}
@@ -340,8 +340,8 @@ export default function GameScreen({ username, room, setScreen }) {
             roundFeedback.includes("✅")
               ?"text-green-400"
               :(roundFeedback.startsWith("❌")||roundFeedback.startsWith("⏰"))
-              ?"text-red-400" 
-              :"text-yellow-400" 
+              ?"text-red-400"
+              :"text-yellow-400"
           }`}
         >
           {roundFeedback}
@@ -349,7 +349,7 @@ export default function GameScreen({ username, room, setScreen }) {
       )}
 
       {answered && !roundFeedback && (
-        <p className="mt-6 text-gray-400">✅ Válasz elküldve ✅</p>
+        <p className="mt-6 text-gray-400">✅ Answer sent ✅</p>
       )}
     </div>
   );

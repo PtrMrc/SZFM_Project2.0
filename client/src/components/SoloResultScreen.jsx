@@ -43,18 +43,18 @@ export default function SoloResultScreen({ setScreen }) {
   if (!result) {
     return (
       <div className="flex items-center justify-center h-screen bg-gray-900 text-white">
-        <p className="text-2xl">⏳ Betöltés...</p>
+        <p className="text-2xl">⏳ Loading...</p>
       </div>
     );
   }
 
   const getResultMessage = () => {
     if (result.winner === "player") {
-      return { emoji: "🎉", text: "Győztél!", color: "text-green-400" };
+      return { emoji: "🎉", text: "You won!", color: "text-green-400" };
     } else if (result.winner === "ai") {
-      return { emoji: "😢", text: "Az AI nyert!", color: "text-red-400" };
+      return { emoji: "😢", text: "The computer won!", color: "text-red-400" };
     } else {
-      return { emoji: "🤝", text: "Döntetlen!", color: "text-yellow-400" };
+      return { emoji: "🤝", text: "Draw!", color: "text-yellow-400" };
     }
   };
 
@@ -77,7 +77,7 @@ export default function SoloResultScreen({ setScreen }) {
             transition={{ duration: 0.6 }}
             className="text-5xl font-bold mb-8"
           >
-            {resultMsg.emoji} Játék vége!
+            {resultMsg.emoji} Game over!
           </motion.h1>
 
           <motion.p
@@ -95,11 +95,11 @@ export default function SoloResultScreen({ setScreen }) {
             transition={{ delay: 0.5, duration: 0.8 }}
             className="bg-gray-800 rounded-lg shadow-xl p-8 w-96 border border-gray-700"
           >
-            <h2 className="text-2xl font-semibold mb-6 text-center">📊 Eredmények</h2>
+            <h2 className="text-2xl font-semibold mb-6 text-center">📊 Results</h2>
 
             <div className="space-y-4">
               <div className="flex justify-between items-center p-4 bg-blue-600 rounded-lg">
-                <span className="text-xl font-semibold">👤 Te</span>
+                <span className="text-xl font-semibold">👤 You</span>
                 <span className="text-2xl font-bold">{result.player_score}</span>
               </div>
 
@@ -109,12 +109,12 @@ export default function SoloResultScreen({ setScreen }) {
               </div>
 
               <div className="flex justify-between items-center p-4 bg-gray-700 rounded-lg">
-                <span className="text-lg">Összesen kérdés</span>
+                <span className="text-lg">Number of questions</span>
                 <span className="text-xl font-bold">{result.total_questions}</span>
               </div>
 
               <div className="flex justify-between items-center p-4 bg-gray-700 rounded-lg">
-                <span className="text-lg">Pontosságod</span>
+                <span className="text-lg">Accuracy</span>
                 <span className="text-xl font-bold">
                   {Math.round((result.player_score / result.total_questions) * 100)}%
                 </span>
@@ -133,7 +133,7 @@ export default function SoloResultScreen({ setScreen }) {
             }}
             className="mt-10 bg-blue-600 hover:bg-blue-700 px-8 py-3 rounded-lg text-white font-semibold shadow-md transition-transform"
           >
-            🏠 Vissza a főmenübe
+            🏠 Back to Home
           </motion.button>
         </motion.div>
       </AnimatePresence>
