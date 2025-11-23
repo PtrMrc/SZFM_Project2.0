@@ -94,16 +94,12 @@ A rendszer automatikusan értékeli a válaszokat és megjeleníti az eredménye
 
 ## 8. Forgatókönyv – Példa játék menete
 
-1. A host létrehoz egy szobát („ROOM123”).  
-2. A játékosok belépnek a szobakóddal.  
-3. A Lobby-ban megjelenik a játékosok listája.  
-4. A host elindítja a játékot.  
-5. A rendszer lekéri az első kérdést az **Open Trivia API-ról**.  
-6. Minden játékos egyszerre kapja meg a kérdést, és 10 másodperc alatt válaszol.  
-7. A hibás válaszadók kiesnek, a helyes válaszadók továbbjutnak.  
-8. A körök ismétlődnek, amíg csak egy játékos marad.  
-9. A győztes és a ranglista megjelenik a ResultScreenen.  
-10. A játékosok kiléphetnek a főmenübe.
+- [UserStory1](UserStory1.md)
+- [UserStory2](UserStory2.md)
+- [UserStory3](UserStory3.md)
+- [UserStory4](UserStory4.md)
+- [UserStory5](UserStory5.md)
+- [UserStory6](UserStory6.md)
 
 ---
 
