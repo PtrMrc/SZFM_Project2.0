@@ -1,81 +1,132 @@
-import React, {useState} from "react";
-import Lobby from "./components/Lobby";
-import GameScreen from "./components/GameScreen";
+import { useState } from "react";
 import JoinRoom from "./components/JoinRoom";
-import ResultScreen from "./components/ResultScreen";
+import Lobby from "./components/Lobby";
 import CreateRoom from "./components/CreateRoom";
+import GameScreen from "./components/GameScreen";
+import ResultScreen from "./components/ResultScreen";
+import HomeScreen from "./components/HomeScreen";
+import SoloSetup from "./components/SoloSetup";
+import SoloGameScreen from "./components/SoloGame";
+import SoloResultScreen from "./components/SoloResultScreen";
 
 function App() {
-  const [screen, setScreen] = useState("home"); // home, join, lobby, game, result
-  const [username, setUsername] = useState("");
+  const [screen, setScreen] = useState("home");
+  const [gameMode, setGameMode] = useState("multiplayer");
   const [room, setRoom] = useState("");
-  const handleJoin = (roomCode, user) => {
-  setRoom(roomCode);
-  setUsername(user);
-  setScreen("lobby"); // Átváltunk a lobby képernyőre
-};
+  const [username, setUsername] = useState("");
+  const [soloSessionId, setSoloSessionId] = useState("");
 
-  return (
-    <div className="flex flex-col items-center justify-center h-screen text-center bg-gray-900 text-white">
-      {screen === "home" && (
-        <div>
-          <h1 className="text-4xl font-bold mb-4">🎮 Multiplayer Quiz Royale</h1>
-          <p className="text-lg text-gray-300 mb-6">
-            Csatlakozz vagy hozz létre egy szobát, és játssz másokkal valós időben!
-          </p>
+  if (screen === "home") {
+    return <HomeScreen setScreen={setScreen} setGameMode={setGameMode} />;
+  }
 
-          <div className="flex gap-4 justify-center">
-            <button
-              className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg text-white font-semibold shadow-lg"
-              onClick={() => setScreen("create")}
-            >
-              Szoba létrehozása
-            </button>
-            <button
-              className="bg-green-600 hover:bg-green-700 px-6 py-3 rounded-lg text-white font-semibold shadow-lg"
-              onClick={() => setScreen("join")}
-            >
-              Csatlakozás szobához
-            </button>
-          </div>
+  if (gameMode === "multiplayer" && screen === "multiplayer-menu") {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen bg-gray-900 text-white">
+        <h2 className="text-3xl font-bold mb-8">👥 Multiplayer mode</h2>
+        <div className="flex gap-6">
+          <button
+            onClick={() => setScreen("join")}
+            className="bg-blue-600 hover:bg-blue-700 px-8 py-4 rounded-lg text-xl font-semibold"
+          >
+            🚪 Join Room
+          </button>
+          <button
+            onClick={() => setScreen("create")}
+            className="bg-green-600 hover:bg-green-700 px-8 py-4 rounded-lg text-xl font-semibold"
+          >
+            ➕ Create Room
+          </button>
         </div>
-      )}
+        <button
+          onClick={() => setScreen("home")}
+          className="mt-8 bg-gray-700 hover:bg-gray-600 px-6 py-2 rounded-lg"
+        >
+          ← Back
+        </button>
+      </div>
+    );
+  }
 
-      {screen === "join" && (
-        <JoinRoom
-          onJoin={handleJoin}
-          setScreen={setScreen}
+  if (gameMode === "solo") {
+    if (screen === "solo-setup") {
+      return (
+        <SoloSetup
           username={username}
           setUsername={setUsername}
-          room={room}
-          setRoom={setRoom}
-        />
-      )}
-
-      {screen === "lobby" && (
-        <Lobby
-          setScreen={setScreen}
-          username={username}
-          room={room}
-          setRoom={setRoom}
-        />
-      )}
-
-      {screen === "create" && (
-        <CreateRoom
-          onCreate={(roomCode, user) => {
-            setRoom(roomCode);
-            setUsername(user);
-            setScreen("lobby");
+          onStart={(sessionId) => {
+            setSoloSessionId(sessionId);
+            setScreen("solo-game");
           }}
-          />
-      )}
+        />
+      );
+    }
 
-      {screen === "game" && <GameScreen setScreen={setScreen} room={room} username={username} />}
+    if (screen === "solo-game") {
+      return (
+        <SoloGameScreen
+          username={username}
+          sessionId={soloSessionId}
+          setScreen={setScreen}
+        />
+      );
+    }
 
-      {screen === "result" && <ResultScreen setScreen={setScreen} />}
-    </div>
-  );
+    if (screen === "solo-result") {
+      return <SoloResultScreen setScreen={setScreen} />;
+    }
+  }
+
+  // Multiplayer flow
+  if (screen === "join") {
+    return (
+      <JoinRoom
+        onJoin={(r, u) => {
+          setRoom(r);
+          setUsername(u);
+          setScreen("lobby");
+        }}
+      />
+    );
+  }
+
+  if (screen === "create") {
+    return (
+      <CreateRoom
+        onCreate={(r, u) => {
+          setRoom(r);
+          setUsername(u);
+          setScreen("lobby");
+        }}
+      />
+    );
+  }
+
+  if (screen === "lobby") {
+    return (
+      <Lobby
+        room={room}
+        username={username}
+        setScreen={setScreen}
+      />
+    );
+  }
+
+  if (screen === "game") {
+    return (
+      <GameScreen
+        room={room}
+        username={username}
+        setScreen={setScreen}
+      />
+    );
+  }
+
+  if (screen === "result") {
+    return <ResultScreen setScreen={setScreen} />;
+  }
+
+  return <div>Unknown screen</div>;
 }
 
 export default App;
