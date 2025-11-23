@@ -94,12 +94,12 @@ A rendszer automatikusan értékeli a válaszokat és megjeleníti az eredménye
 
 ## 8. Forgatókönyv – Példa játék menete
 
-- [UserStory1](UserStory1.md)
-- [UserStory2](UserStory2.md)
-- [UserStory3](UserStory3.md)
-- [UserStory4](UserStory4.md)
-- [UserStory5](UserStory5.md)
-- [UserStory6](UserStory6.md)
+- [UserStory1](UserStory1)
+- [UserStory2](UserStory2)
+- [UserStory3](UserStory3)
+- [UserStory4](UserStory4)
+- [UserStory5](UserStory5)
+- [UserStory6](UserStory6)
 
 ---
 
