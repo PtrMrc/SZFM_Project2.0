@@ -289,7 +289,7 @@ export default function GameScreen({ username, room, setScreen }) {
   // 🔹 Ha még nincs kérdés
   if (!question) {
     return (
-      <div className="flex flex-col items-center justify-center h-screen text-white">
+      <div className="flex flex-col items-center justify-center h-screen bg-gray-900 text-white">
         <h2 className="text-3xl">⏳ Waiting for the question...</h2>
       </div>
     );
@@ -336,7 +336,7 @@ export default function GameScreen({ username, room, setScreen }) {
       {roundFeedback && (
         <p
           style={{ whiteSpace:'pre-line'}}
-          className={`mt-8 text-2xl font-bold ${
+          className={`mt-8 text-2xl font-bold text-center ${
             roundFeedback.includes("✅")
               ?"text-green-400"
               :(roundFeedback.startsWith("❌")||roundFeedback.startsWith("⏰"))

@@ -100,6 +100,12 @@ export default function SoloSetup({ username, setUsername, onStart }) {
         >
           {isCreating ? "⏳ Initializing..." : "🚀 Start game"}
         </button>
+        <button
+          onClick={() => window.location.href = "/"}
+          className="w-full mt-4 bg-gray-700 hover:bg-gray-600 py-2 rounded-lg font-semibold transition-colors"
+        >
+          ← Back
+        </button>
       </motion.div>
     </div>
   );

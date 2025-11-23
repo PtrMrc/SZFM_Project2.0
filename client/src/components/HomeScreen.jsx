@@ -36,7 +36,7 @@ export default function HomeScreen({ setScreen, setGameMode }) {
         <motion.div
           initial={{ x: -100, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
-          transition={{ delay: 0.5, duration: 0.6 }}
+          transition={{ delay: 0.5, duration: 0.6, type: "tween" }}
           whileHover={{ scale: 1.05 }}
           className="bg-gray-800 p-8 rounded-2xl shadow-2xl w-72 cursor-pointer border-2 border-transparent hover:border-blue-500 transition-all"
           onClick={handleMultiplayer}
@@ -54,7 +54,7 @@ export default function HomeScreen({ setScreen, setGameMode }) {
         <motion.div
           initial={{ x: 100, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
-          transition={{ delay: 0.5, duration: 0.6 }}
+          transition={{ delay: 0.5, duration: 0.6, type: "tween" }}
           whileHover={{ scale: 1.05 }}
           className="bg-gray-800 p-8 rounded-2xl shadow-2xl w-72 cursor-pointer border-2 border-transparent hover:border-purple-500 transition-all"
           onClick={handleSolo}
