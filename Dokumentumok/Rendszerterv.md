@@ -105,4 +105,31 @@
       - Pontszám
       - Ranglista
 
+## 7. Tesztelési Terv
+
+A tesztelés fókuszában a valós idejű adatátvitel (szinkronizáció) és a speciális játéklogika áll.
+
+* **Tesztelési szintek:**
+    * **Egységtesztek (Unit):** A backend logika ellenőrzése (pl. pontszámítás, kiesés vs. továbbjutás eldöntése).
+    * **Integrációs tesztek:** A kliens és szerver közötti Socket.io kommunikáció vizsgálata (megjelenik-e a kérdés mindenkinél egyszerre?).
+    * **Terheléses teszt:** A rendszer stabilitásának ellenőrzése 20+ párhuzamos játékos esetén.
+
+* **Kiemelt tesztesetek:**
+    1. **Jogosultság:** Az első belépő valóban megkapja-e a *Host* (indító) jogot, a többiek pedig a *Player* státuszt.
+    2. **Játékmenet:** A külső API-ból érkező kérdés és a 4 válaszopció helyes megjelenítése.
+    3. **Szabályrendszer:** A **Kegyelmi szabály** működése (ha mindenki ront, senki nem esik ki) és a normál kiesés (rossz válasz -> néző mód) ellenőrzése.
+    4. **AI Mód:** Az 1v1 módban az AI válaszadási idejének és találati arányának ellenőrzése a választott nehézségi szinten.
+
+* **Eszközök:** Jest (logika), Postman (API), Socket.io-client (hálózati szimuláció).
+
+## 8. Karbantartási Terv
+
+A rendszer élesítése utáni legfontosabb feladat a külső függőségek kezelése és a stabilitás megőrzése.
+
+* **Külső API felügyelet (Kritikus):** Mivel a kérdések az *OpenTrivia Database*-ből jönnek, folyamatosan figyelni kell az API állapotát. Ha a szolgáltató változtat az adatstruktúrán, a backend kódot azonnal hozzá kell igazítani (adaptív karbantartás).
+* **Vészhelyzeti terv (Fallback):** Fel kell készülni az API leállására. Ilyen esetre a rendszernek tartalmaznia kell egy "Offline módot" egy kisebb, saját tárolt kérdéscsomaggal, hogy a játék ne álljon meg.
+* **Hibajavítás:** A felhasználók által jelentett technikai hibák (pl. UI szétcsúszás mobilon, beragadó időzítő) azonnali javítása.
+* **Továbbfejlesztés:** A v2.0-ra tervezett funkciók (profilrendszer, statisztikák mentése, saját témák) ütemezett beépítése a stabil alaprendszerbe.
+
+
 
