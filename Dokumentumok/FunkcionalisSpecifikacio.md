@@ -11,29 +11,82 @@ A kérdéseket az Open Trivia API szolgáltatja, amely tematikusan gyűjtött k�
 
 ---
 
-## 2. Jelenlegi helyzet
+## 2. Üzleti Megszorítások (Business Constraints)
 
-A legtöbb online kvízjáték oktatási célokat szolgál, és nem biztosít közvetlen versenyzést a játékosok között.  
-A játékosok általában egymástól függetlenül töltik ki a teszteket, és csak utólag látják az eredményeket.  
+Ez a dokumentum rögzíti az alkalmazás felhasználói felületének és üzleti logikájának alapvető megszorításait és feltételes lépéseit.
 
-A fiatalabb generáció számára ez kevésbé motiváló, mert hiányzik a valós idejű interakció és a kompetitív játékélmény.  
-A Quiz Royale ezen változtat azzal, hogy a kvíz-mechanikát ötvözi a Battle Royale játékmóddal,  
-így a játék pörgős, versengő és szórakoztató élményt nyújt.
+### 1. Játékmód Választás
+
+**Belső Logikai Megszorítás:** A rendszernek pontosan egy játékmódot kell inicializálnia.
+
+| Feltétel | Eredmény / Következő Lépés |
+| :--- | :--- |
+| **Választás: Multiplayer** | A felhasználó a **Multiplayer Felületre** lép tovább (F2/F4 funkció). |
+| **Választás: Player vs AI** | A felhasználó a **Solo Beállítási Felületre** lép tovább (F6 funkció). |
+
+
+### 2. Multiplayer Felület
+
+**Belső Logikai Megszorítás:** A felhasználónak a szoba tranzakcióját (létrehozás vagy csatlakozás) kell választania.
+
+| Feltétel | Eredmény / Következő Lépés |
+| :--- | :--- |
+| **Akció: Szoba Létrehozása (Host)** | A felhasználó az **Szoba Létrehozása** dialógusra lép (F3 funkció). |
+| **Akció: Csatlakozás a Szobához (Join)** | A felhasználó a **Csatlakozás a Szobához** dialógusra lép (F4 funkció). |
+
+
+### 3. Szoba Létrehozása (Host)
+
+**Megszorítás:** A szoba létrehozásához érvényes kód és név megadása kötelező.
+
+| Feltétel | Eredmény / Következő Lépés |
+| :--- | :--- |
+| **Input: Érvényes Szobakód ÉS Név megadva** | A szoba létrejön. A felhasználó **Host státusszal** belép a Lobbyba (F5 funkció). |
+| **Akció: Vissza (Back) gomb** | Visszalépés a **Multiplayer Felületre** (F2 funkció). |
+
+
+### 4. Csatlakozás a Szobához (Player)
+
+**Megszorítás:** A szobához való csatlakozáshoz érvényes kód és név megadása kötelező.
+
+| Feltétel | Eredmény / Következő Lépés |
+| :--- | :--- |
+| **Input: Érvényes Szobakód ÉS Név megadva** | A felhasználó **Player státusszal** belép a Lobbyba (F5 funkció). |
+| **Akció: Vissza (Back) gomb** | Visszalépés a **Multiplayer Felületre** (F2 funkció). |
+
+
+### 5. Lobby Állapot (Várakozás)
+
+**Megszorítás:** A játékot csak a Host jogosult elindítani.
+
+| Feltétel | Eredmény / Következő Lépés |
+| :--- | :--- |
+| **Akció: Host elindítja a játékot** | A rendszer szinkronizálja a klienseket, és elindul a **Játékmenet (Core Loop)**. |
+| **Állapot: Hostra való Várakozás** | A játékosok a Lobbyban maradnak, amíg a Host meg nem nyomja a Start gombot. |
+
+
+### 6. Player vs AI (Solo) Beállítások Kiválasztása
+
+**Megszorítás:** A játékindítás előtt a beállításokat el kell végezni.
+
+| Feltétel | Eredmény / Következő Lépés |
+| :--- | :--- |
+| **Akció: Solo mód Beállítások** | A felhasználó **megadhatja** a kérdések számát és az AI nehézségét (F7 funkció). |
+| **Akció: Vissza (Back) gomb** | Visszalépés a **Játékmód Választó** felületre (F1 funkció). |
+
+
+### 7. Solo Mód Beállítva
+
+**Megszorítás:** A játék csak akkor indulhat el, ha minden beállítási paraméter érvényes/megadott.
+
+| Feltétel | Eredmény / Következő Lépés |
+| :--- | :--- |
+| **Állapot: Beállítások Készen Állnak (Pl. Start gomb aktív)** | A játék elindul a Solo mód beállításokkal. |
+| **Állapot: Beállítások Hiányosak** | A rendszer **nem enged tovább lépni**, a Start gomb inaktív marad. |
 
 ---
 
-## 3. Jelenlegi üzleti folyamatok modellje
-
-A legtöbb online kvízjátékban a játékosok nem egyszerre játszanak,  
-vagy nem érzékelik egymás előrehaladását.  
-A hagyományos rendszerek (pl. Kahoot) oktatási célokra születtek, és kevésbé hangsúlyozzák a versenyt.
-
-A Quiz Royale ezzel szemben valós időben működik, minden játékos egyszerre kapja a kérdéseket,  
-így a verseny gyors, dinamikus és élő.
-
----
-
-## 4. Igényelt üzleti folyamatok modellje
+## 3. Igényelt üzleti folyamatok modellje
 
 A cél egy interaktív, valós idejű játékplatform megvalósítása, ahol:
 - a játékosok egy szobába csatlakoznak,
@@ -48,7 +101,7 @@ A rendszer automatikusan értékeli a válaszokat és megjeleníti az eredménye
 
 ---
 
-## 5. Használati esetek
+## 4. Használati esetek
 
 | Szereplő | Jogosultságok / Leírás |
 |-----------|------------------------|
@@ -58,7 +111,7 @@ A rendszer automatikusan értékeli a válaszokat és megjeleníti az eredménye
 
 ---
 
-## 6. Megfeleltetés (követelmények – funkciók)
+## 5. Megfeleltetés (követelmények – funkciók)
 
 | Funkció Azonosító | Kapcsolódó Követelmény | Funkció Neve | Leírás |
 | :--- | :--- | :--- | :--- |
@@ -79,7 +132,7 @@ A rendszer automatikusan értékeli a válaszokat és megjeleníti az eredménye
 
 ---
 
-## 7. Képernyőtervek
+## 6. Képernyőtervek
 
 - **Main Menu:** „Szoba létrehozása” és „Csatlakozás szobához” gombok  
 - **JoinRoom:** név + szobakód beviteli mezők  
@@ -92,7 +145,7 @@ A rendszer automatikusan értékeli a válaszokat és megjeleníti az eredménye
 
 ---
 
-## 8. Forgatókönyv – Példa játék menete
+## 7. Forgatókönyv – Példa játék menete
 
 - [UserStory1](UserStory1)
 - [UserStory2](UserStory2)
@@ -103,7 +156,7 @@ A rendszer automatikusan értékeli a válaszokat és megjeleníti az eredménye
 
 ---
 
-## 9. Funkció – Követelmény megfeleltetés
+## 8. Funkció – Követelmény megfeleltetés
 
 | Funkció | Modul ID | Lefedettség |
 |----------|-----------|--------------|
@@ -115,7 +168,7 @@ A rendszer automatikusan értékeli a válaszokat és megjeleníti az eredménye
 
 ---
 
-## 10. Fogalomszótár
+## 9. Fogalomszótár
 
 | Fogalom | Meghatározás |
 |----------|---------------|
