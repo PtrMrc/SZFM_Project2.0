@@ -22,26 +22,7 @@ A Quiz Royale ezen változtat azzal, hogy a kvíz-mechanikát ötvözi a Battle 
 
 ---
 
-## 3. Követelménylista
-
-| Modul ID | Modul neve | Verzió | Leírás |
-|-----------|-------------|--------|--------|
-| K1 | **Szoba létrehozása** | 1.0 | A host játékos új szobát hozhat létre egyedi szobakóddal. |
-| K2 | **Csatlakozás szobához** | 1.0 | Játékosok a megadott szobakód és felhasználónév alapján beléphetnek a szobába. |
-| K3 | **Lobby megjelenítés** | 1.0 | A játékosok listája valós időben frissül, a host indíthatja a játékot. |
-| K4 | **Játék indítása** | 1.0 | A host indítja el a játékot, ekkor minden játékos egyszerre kap kérdést. |
-| K5 | **Kérdéslekérés (Open Trivia API)** | 1.0 | A backend az Open Trivia API segítségével tematikus kérdéseket kér le. |
-| K6 | **Válaszadás időkorláttal** | 1.0 | A játékosok adott időn belül (pl. 10 másodperc) válaszolhatnak. |
-| K7 | **Kiesés logika** | 1.0 | A hibásan válaszoló játékosok automatikusan kiesnek a játékból. |
-| K8 | **Továbbjutás / új kérdés** | 1.0 | A helyesen válaszoló játékosok automatikusan a következő körbe jutnak. |
-| K9 | **Ranglista generálása** | 1.0 | A játék végén megjelenik a végső sorrend (győztes + kiesési sorrend). |
-| K10 | **Eredmény képernyő (ResultScreen)** | 1.0 | Animált befejező képernyő, győztes megjelenítése és kilépés a főmenübe. |
-| K11 | **Tematikus játékmód** | 1.0 | Adott témákörök választása (pl. filmek, sport, történelem). |
-| K12 | **Profilrendszer (Terv)** | 2.0 | Saját profil, statisztikák és győzelmi arányok mentése. |
-
----
-
-## 4. Jelenlegi üzleti folyamatok modellje
+## 3. Jelenlegi üzleti folyamatok modellje
 
 A legtöbb online kvízjátékban a játékosok nem egyszerre játszanak,  
 vagy nem érzékelik egymás előrehaladását.  
@@ -52,7 +33,7 @@ A Quiz Royale ezzel szemben valós időben működik, minden játékos egyszerre
 
 ---
 
-## 5. Igényelt üzleti folyamatok modellje
+## 4. Igényelt üzleti folyamatok modellje
 
 A cél egy interaktív, valós idejű játékplatform megvalósítása, ahol:
 - a játékosok egy szobába csatlakoznak,
@@ -67,7 +48,7 @@ A rendszer automatikusan értékeli a válaszokat és megjeleníti az eredménye
 
 ---
 
-## 6. Használati esetek
+## 5. Használati esetek
 
 | Szereplő | Jogosultságok / Leírás |
 |-----------|------------------------|
@@ -77,7 +58,7 @@ A rendszer automatikusan értékeli a válaszokat és megjeleníti az eredménye
 
 ---
 
-## 7. Megfeleltetés (követelmények – funkciók)
+## 6. Megfeleltetés (követelmények – funkciók)
 
 | Követelmény | Funkció | Lefedés |
 |--------------|----------|---------|
@@ -88,7 +69,7 @@ A rendszer automatikusan értékeli a válaszokat és megjeleníti az eredménye
 
 ---
 
-## 8. Képernyőtervek
+## 7. Képernyőtervek
 
 - **Main Menu:** „Szoba létrehozása” és „Csatlakozás szobához” gombok  
 - **JoinRoom:** név + szobakód beviteli mezők  
@@ -101,7 +82,7 @@ A rendszer automatikusan értékeli a válaszokat és megjeleníti az eredménye
 
 ---
 
-## 9. Forgatókönyv – Példa játék menete
+## 8. Forgatókönyv – Példa játék menete
 
 1. A host létrehoz egy szobát („ROOM123”).  
 2. A játékosok belépnek a szobakóddal.  
@@ -116,7 +97,7 @@ A rendszer automatikusan értékeli a válaszokat és megjeleníti az eredménye
 
 ---
 
-## 10. Funkció – Követelmény megfeleltetés
+## 9. Funkció – Követelmény megfeleltetés
 
 | Funkció | Modul ID | Lefedettség |
 |----------|-----------|--------------|
@@ -128,7 +109,7 @@ A rendszer automatikusan értékeli a válaszokat és megjeleníti az eredménye
 
 ---
 
-## 11. Fogalomszótár
+## 10. Fogalomszótár
 
 | Fogalom | Meghatározás |
 |----------|---------------|
