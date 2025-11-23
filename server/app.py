@@ -5,13 +5,20 @@ from question_generator import spin_wheel, generate_question, get_all_topics
 import threading
 import time
 import random
+import google.generativeai as genai
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 solo_games = {}
 
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
 app.config['PROPAGATE_EXCEPTIONS'] = True
-question_timer_seconds=20
+question_timer_seconds=22 # 2 másodperc plusz
 
 @app.route('/')
 def index():
@@ -101,6 +108,29 @@ def start_game_after_delay(room_code):
     print(f"🚀 Játék indítása és első kérdés küldése ({room_code})")
     send_new_question(room_code)
 
+def generate_ai_commentator_messages():
+    """Generate AI commentator messages for the game"""
+    try:
+        model = genai.GenerativeModel('gemini-2.5-flash')
+        prompt = """Generate 10 short, fun, natural-sounding game commentator messages for a quiz game.
+        Make them varied: some energetic, some witty, some motivational. Keep each under 15 words.
+        Format as a JSON array of strings in English.
+        Examples: "Let's see what you've got. 🔥", "This one might surprise you. 🎯", "Stay sharp, players. ⚡"
+        """
+
+        response = model.generate_content(prompt)
+        messages = eval(response.text)  # Parse JSON array
+        return messages if isinstance(messages, list) else []
+    except Exception as e:
+        print(f"⚠️ AI message generation failed: {e}")
+        return [
+            "Go for it! 🎯",
+            "Think it through! 🧠",
+            "Who's taking the win? 🏆",
+            "This is getting exciting! ⚡",
+            "Good luck! 🍀"
+        ]
+
 @socketio.on("start_game")
 def handle_start(data):
     room_code = data.get("room")
@@ -130,6 +160,8 @@ def handle_start(data):
     try:
         room["topics"] = get_all_topics()
         print(f"✅ Témakörök sikeresen lekérve a {room_code} szobához ({len(room['topics'])} db)")
+        room["ai_messages"] = generate_ai_commentator_messages()
+        room["message_index"] = 0
     except Exception as e:
         print(f"🆘 CRITICAL: Nem sikerült lekérni a témaköröket: {e}")
         emit("error", {"msg": "Hiba a témakörök lekérésekor. Próbáld újra."})
@@ -146,7 +178,13 @@ def send_new_question(room_code):
     if not room:
         print(f"⚠️ Hiba: {room_code} szoba nem található a kérdésküldésnél.")
         return
-    
+
+    if room.get("sending_question"):
+        print(f"⚠️ Already sending question to {room_code}, skipping duplicate call")
+        return
+
+    room["sending_question"] = True
+
     question = room.get("next_question_cache")
 
     if question:
@@ -161,12 +199,11 @@ def send_new_question(room_code):
                 print(f"🆘 CRITICAL: Nincsenek mentett témakörök {room_code}-ban. Újrapróbálkozás...")
                 topics = get_all_topics()
                 room["topics"] = topics
-            
 
             topic = spin_wheel(topics)
             category_name = topic
             question = generate_question(topic, topics[topic])
-            
+
             if not question:
                  raise Exception("Question generation returned None")
 
@@ -186,20 +223,30 @@ def send_new_question(room_code):
         "timer": 12
         }, room = room_code)
     socketio.sleep(13)
-    
+
     start_time = time.time()
     room["round_start_time"] = start_time
     room["round_end_time"] = start_time + question_timer_seconds
 
     print(f"🧠 Sending new question to {room_code}: {question['question']}")
 
+    # Get AI commentator message
+    messages = room.get("ai_messages", ["Go for it! 🎯"])
+    msg_idx = room.get("message_index", 0)
+    ai_message = messages[msg_idx % len(messages)]
+    room["message_index"] = msg_idx + 1
+    socketio.emit("ai_comment", {"message": ai_message}, room=room_code)
+    socketio.sleep(2)  # Show message for 2 seconds
+
     socketio.emit("new_question", {
         "question": question,
-        "category": category_name, 
+        "category": category_name,
         "timer": question_timer_seconds,
         "round_id": round_id,
         "round_end_time": room["round_end_time"]
     }, room=room_code)
+
+    room["sending_question"] = False
 
     socketio.start_background_task(target=delayed_prefetch, room_code=room_code, delay_seconds=7)
     socketio.start_background_task( target=evaluate_answers,  room_code=room_code, round_id=round_id)
@@ -208,11 +255,11 @@ def prefetch_next_question(room_code):
     """A következő kérdés előtöltése a háttérben"""
     room = rooms.get(room_code)
     if not room:
-        return 
+        return
 
     try:
         print(f"⏳ Pre-fetching next question for {room_code}...")
-        
+
         topics = room.get("topics")
         if not topics:
             print(f"🆘 CRITICAL (prefetch): Nincsenek mentett témakörök {room_code}-ban. Újrapróbálkozás...")
@@ -222,12 +269,12 @@ def prefetch_next_question(room_code):
         topic = spin_wheel(topics)
         room["topic"] = topic
         question = generate_question(topic, topics[topic])
-        
+
         if room and question:
             room["next_question_cache"] = question
             print(f"✅ Pre-fetched next question for {room_code}")
         elif room:
-            room["next_question_cache"] = None 
+            room["next_question_cache"] = None
             print(f"⚠️ Prefetch failed, generate_question returned None for {room_code}.")
     except Exception as e:
         print(f"⚠️ Failed to pre-fetch question for {room_code}: {e}")
@@ -543,19 +590,23 @@ def handle_request_current_question(data):
     room = rooms[room_code]
     question = room.get("current_question")
     round_id = room.get("current_round_id")
-    end_time = room.get("round_end_time") 
+    end_time = room.get("round_end_time")
 
 
     if question and round_id and end_time:
         remaining = max(0, end_time - time.time())
 
         print(f"📨 {request.sid} requested current question, {remaining:.1f}s remaining")
-        socketio.emit("new_question", {
-            "question": question,
-            "timer": int(remaining),
-            "round_id": round_id,
-            "round_end_time": end_time
-        }, room=request.sid)
+        # Only send if there's actually time remaining
+        if remaining > 0:
+            socketio.emit("new_question", {
+                "question": question,
+                "timer": question_timer_seconds,  # CHANGED: Send full timer, not remaining
+                "round_id": round_id,
+                "round_end_time": end_time
+            }, room=request.sid)
+        else:
+            print(f"⚠️ Not sending expired question to {request.sid}")
 
 
 @socketio.on("use_help")

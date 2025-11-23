@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef} from "react";
 import { socket } from "../utils/socket";
 import { Wheel } from "react-custom-roulette";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 
 export default function GameScreen({ username, room, setScreen }) {
@@ -25,6 +25,9 @@ export default function GameScreen({ username, room, setScreen }) {
   //Segítség
   const [usedHelp, setUsedHelp] = useState(false);
   const [removedAnswers, setRemovedAnswers] = useState([]);
+
+  //AI kommentár
+  const [aiMessage, setAiMessage] = useState("");
 
   useEffect(() => {
     fetch("https://opentdb.com/api_category.php")
@@ -63,6 +66,10 @@ export default function GameScreen({ username, room, setScreen }) {
       setPrizeNumber(idx >= 0 ? idx: 0);
       setShowTopic(false);
       setSpinning(true);
+
+      setQuestion(null);
+      setRoundFeedback(null);
+      setAnswered(false);
     });
 
     socket.on("new_question", (data) => {
@@ -89,7 +96,7 @@ export default function GameScreen({ username, room, setScreen }) {
 
     setQuestion(data.question)
     setRoundEndTime(data.round_end_time);
-  	setRoundFeedback(null);
+    setRoundFeedback(null);
     setTimer(data.timer);
     setAnswered(false);
 
@@ -106,8 +113,8 @@ export default function GameScreen({ username, room, setScreen }) {
  	    if (animationFrameId.current) {
 	  	cancelAnimationFrame(animationFrameId.current);
       }
- 	    setTimer(0); 
-      setRoundEndTime(null); 
+ 	    setTimer(0);
+      setRoundEndTime(null);
 
       const eliminatedCount = data.eliminated.length;
       const survivorCount = data.survivors.length;
@@ -142,6 +149,11 @@ export default function GameScreen({ username, room, setScreen }) {
       console.log("❌", data.username, "kiesett");
     });
 
+    socket.on("ai_comment", (data) => {
+      setAiMessage(data.message);
+      setTimeout(() => setAiMessage(""), 5000);
+    });
+
     socket.on("game_over", (data) => {
  	    if (animationFrameId.current) {
  	  	cancelAnimationFrame(animationFrameId.current);
@@ -168,6 +180,7 @@ export default function GameScreen({ username, room, setScreen }) {
       socket.off("player_eliminated");
       socket.off("game_over");
       socket.off("help_result");
+      socket.off("ai_comment");
 
 
     if (animationFrameId.current) {
@@ -308,6 +321,35 @@ export default function GameScreen({ username, room, setScreen }) {
 
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-gray-900 text-white">
+      {/* AI Commentator */}
+      <AnimatePresence>
+        {aiMessage && (
+          <motion.div
+            initial={{ x: -100, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: -100, opacity: 0 }}
+            transition={{ duration: 0.4, type: "spring" }}
+            className="absolute top-8 left-8 flex items-start gap-3"
+          >
+            {/* AI Avatar */}
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-2xl shadow-lg flex-shrink-0">
+              🤖
+            </div>
+
+            {/* Chat Bubble */}
+            <div className="relative">
+              {/* Bubble tail */}
+              <div className="absolute left-0 top-3 w-0 h-0 border-t-8 border-t-transparent border-b-8 border-b-transparent border-r-8 border-r-gray-800 -ml-2"></div>
+
+              {/* Bubble content */}
+              <div className="bg-gray-800 px-6 py-3 rounded-2xl rounded-tl-sm shadow-xl border border-gray-700 max-w-md">
+                <p className="text-white font-medium text-lg">{aiMessage}</p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <h2 className="text-2xl mb-6">{question.question}</h2>
       <p className="mb-4 text-gray-400">⏰ Time remaining: {timer}s</p>
 

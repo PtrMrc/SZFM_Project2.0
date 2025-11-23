@@ -26,7 +26,7 @@ export default function CreateRoom({ onCreate }) {
 
       <input
         type="text"
-        placeholder="Username"
+        placeholder="Name"
         value={username}
         onChange={(e) => setUsername(e.target.value)}
         className="w-64 p-2 mb-3 rounded bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
