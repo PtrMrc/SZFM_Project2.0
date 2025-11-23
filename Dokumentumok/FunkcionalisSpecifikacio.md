@@ -60,12 +60,22 @@ A rendszer automatikusan értékeli a válaszokat és megjeleníti az eredménye
 
 ## 6. Megfeleltetés (követelmények – funkciók)
 
-| Követelmény | Funkció | Lefedés |
-|--------------|----------|---------|
-| K1–K3 | Lobby és szobakezelés | Kész |
-| K4–K8 | Játéklogika (indítás, válasz, kiesés, továbbjutás) | Kész |
-| K9–K11 | Ranglista és eredménymegjelenítés | Kész |
-| K12 | Fejlesztés alatt álló funkciók | Fejlesztés alatt |
+| Funkció Azonosító | Kapcsolódó Követelmény | Funkció Neve | Leírás |
+| :--- | :--- | :--- | :--- |
+| **F1** | K1, K2 | **Játékmód Választó UI** | A nyitóképernyőn a felhasználó választhat a "Multiplayer" és a "Player vs AI" módok között. |
+| **F2** | K1, K2 | **Automatikus Host Logika** | A rendszer figyeli a szobába lépés sorrendjét; az első csatlakozó automatikusan megkapja a Host jogosultságot (start gomb), a többiek Player státuszt kapnak. |
+| **F3** | K4 | **AI Konfigurációs Panel** | "Player vs AI" módban a játék indítása előtt beállítható csúszkákkal a kérdések száma (5-ös lépésköz) és az AI pontossága (Könnyű/Közepes/Nehéz). |
+| **F4** | K3 | **Socket Szoba Kezelő** | A szerveroldali logika, amely a klienseket azonos `roomID` alapján csoportosítja és szinkronban tartja a kapcsolatot. |
+| **F5** | K9 | **Szerencsekerék Modul** | A körök elején megjelenő vizuális komponens, amely véletlenszerűen kiválaszt egy kategóriát (pl. History, Science), és átadja az ID-t az API hívónak. |
+| **F6** | K5 | **OpenTrivia API Híd** | A backend funkció, amely a szerencsekerék által kapott kategória ID-val lekér egy kérdést, és JSON formátumban továbbítja a klienseknek. |
+| **F7** | K6 | **Szinkron Időzítő** | A szerver által vezérelt 20 másodperces visszaszámláló, amely biztosítja, hogy minden kliensnél (és az AI-nál is) egyszerre járjon le az idő. |
+| **F8** | K6 | **Felezés (50/50) Logika** | A játékos kliensoldali funkciója: gombnyomásra elrejti a 3 rossz válaszból 2-t. A rendszer rögzíti a felhasználást (meccsenként 1x). |
+| **F9** | K4 | **AI Bot Szimulátor** | Az algoritmus, amely az "AI vs Player" módban a beállított pontosság alapján dönt a helyes/helytelen válaszról, és véletlenszerű késleltetéssel "válaszol". |
+| **F10** | K7, K8 | **Válasz Validátor** | A beérkező válaszok összevetése a helyes megoldással. |
+| **F11** | K8 | **Kegyelmi Szabály (Mercy Rule)** | Speciális feltételkezelés: ha `TotalPlayers == WrongAnswers`, akkor a rendszer senkit nem állít Spectator státuszba, hanem új kört indít. |
+| **F12** | K8 | **Kiesés Kezelő** | Ha a kegyelmi szabály nem aktív, a rossz választ adó játékos státuszát aktívról Spectator-ra (kiesett) állítja. |
+| **F13** | K10 | **Győzelem Detektor** | Minden kör végén ellenőrzi az aktív játékosok számát. Ha `ActiveCount == 1`, leállítja a játékciklust és meghívja az eredményképernyőt. |
+| **F14** | K11 | **Rangsor Kalkulátor** | Összeállítja a listát a játékosokból a kiesés ideje (kör száma) alapján. |
 
 ---
 
