@@ -41,7 +41,7 @@ A 100%-ban ideális rendszer a következő funkciókkal rendelkezne:
 
 ---
 
-## 4. Funkcionális követelmények
+## 4. Követelménylista
 
 | Funkciócsoport | Azonosító | Funkció | Verzió | Leírás |
 |----------------|------------|----------|---------|---------|
@@ -87,42 +87,93 @@ A Quiz Royale célja ennek a folyamatnak a modernizálása, a következő módon
 
 ---
 
-## 8. Követelménylista
+## 7. Szabadriport: Webalapú Kvízrendszer (Battle Royale Koncepció)
 
-| Modul ID | Modul neve | Verzió | Leírás |
-|-----------|-------------|--------|--------|
-| K1 | Szoba létrehozása | 1.0 | Egyedi szobakód generálása, host beállítása. |
-| K2 | Csatlakozás szobához | 1.0 | Felhasználónév és kód alapján csatlakozás a szerverhez. |
-| K3 | Lobby kezelése | 1.0 | A játékosok és a host valós idejű megjelenítése. |
-| K4 | Játék indítása | 1.0 | A host indíthatja a játékot, más nem. |
-| K5 | Kérdéslekérés az Open Trivia API-ból | 1.0 | Kategorizált kérdések automatikus betöltése. |
-| K6 | Időzítő | 1.0 | A válaszadási idő 10 másodperc, vizuális visszaszámlálással. |
-| K7 | Válaszkezelés | 1.0 | A válaszokat a szerver gyűjti, majd értékeli. |
-| K8 | Kiesés kezelése | 1.0 | A rossz válaszadók automatikus kizárása a játékból. |
-| K9 | Új kör indítása | 1.0 | A helyesen válaszolók új kérdést kapnak. |
-| K10 | Játék vége és ranglista | 1.0 | A rendszer meghatározza a győztest és a helyezéseket. |
-| K11 | Eredmény animáció | 1.0 | Fade-in animációval megjelenő végeredmény és ranglista. |
-| K12 | Kilépés főmenübe | 1.0 | A játékos visszatérhet a kezdőképernyőre. |
-| K13 | Tematikus játékmód | 2.0 | A játékos választhatja ki a témát (fejlesztés alatt). |
-| K14 | Profilrendszer | 2.0 | Profil, statisztika és győzelmi adatok (fejlesztés alatt). |
+### 1. Vezetői Összefoglaló
+
+Az alkalmazás célja egy **modern, webalapú kvízrendszer** megvalósítása, amely a lexikális tudást ötvözi a szerencsével és a stratégiai játékelemekkel. A szoftver alapvető koncepciója a **„kieséses” (Battle Royale) rendszer**, ahol a játékosoknak nem pontokat kell gyűjteniük, hanem minél tovább versenyben kell maradniuk.
+
+
+### 2. A Rendszer Felépítése és a Belépési Folyamat
+
+Az alkalmazás indításakor a felhasználót egy letisztult **Főmenü** fogadja. A rendszer **nem igényel előzetes regisztrációt**, a belépés gyors és akadálymentes.
+
+A felhasználó két opció közül választhat:
+* **Multiplayer (Többjátékos mód):** Valós idejű küzdelem más játékosok ellen.
+* **Player vs AI (Egyjátékos mód):** Küzdelem a gép ellen, testreszabható paraméterekkel.
+
+### 3. Multiplayer Mód Működése
+
+### Szobakezelés és Jogosultságok
+
+A többjátékos módba lépve a felhasználónak egy **Nevet** és egy **Szobakódot** kell megadnia. A rendszer a háttérben dinamikusan kezeli a szobákat:
+
+| Jogosultság | Leírás |
+| :--- | :--- |
+| **Host (Játékmester)** | Az a felhasználó, aki **elsőként** lép be egy adott szobakóddal. Kizárólag ő rendelkezik „Start” gombbal a játék elindításához. |
+| **Játékosok** | Minden további csatlakozó, aki ugyanazt a kódot adja meg. Automatikusan a váróterembe (**Lobby**) kerülnek. |
+
+**Szinkronizáció:** A játék indításakor a rendszer minden csatlakoztatott eszközt (Host és Játékosok) egyszerre léptet át a játék felületre.
+
+### A Játékmenet (Core Loop)
+
+A játék körökre osztott, minden kör azonos logikát követ:
+
+1.  **Témaválasztás Szerencsekerékkel:**
+    * A kör elején megjelenik egy animált szerencsekerék.
+    * A pörgetés dönti el a következő kérdés kategóriáját (pl. Történelem, Tudomány, Filmek), biztosítva a **véletlenszerűséget** és az esélyegyenlőséget.
+2.  **Automatikus Tartalomgenerálás:**
+    * A téma kiválasztása után a rendszer **API hívást** indít az **OpenTrivia Database** felé.
+    * A kérdés és a válaszlehetőségek valós időben érkeznek.
+3.  **Válaszadás:**
+    * A kérdés minden játékosnál egyszerre jelenik meg.
+    * **Időkorlát:** Fix **20 másodperc**.
+4.  **Segítség:**
+    * Minden játékosnak meccsenként **1 db „Felezés”** lehetősége van.
+    * Aktiválása levesz két rossz választ a négyből, 50%-ra növelve a találati esélyt.
+
+### Kiesési Logika és a „Kegyelmi Szabály”
+
+A válaszadási idő lejárta után a rendszer kiértékeli az eredményeket:
+
+* **Továbbjutás:** Aki **helyesen** válaszolt, versenyben marad.
+* **Kiesés:** Aki **rosszul** válaszolt, kiesik a játékból.
+* **Kegyelmi Szabály:**
+    * Speciális eset, ha a kör végén **senki sem** találja el a helyes választ.
+    * Ekkor a rendszer **nem ejt ki senkit**, mindenki kap egy új esélyt, és a játék új pörgetéssel folytatódik.
+* **Győzelem:** A játék addig tart, amíg **egyetlen játékos marad talpon**.
+
+### 4. Player vs AI Mód Működése
+
+Ez a mód lehetőséget ad a **gyakorlásra** és a gyors játékra társaság nélkül. A mechanika alapjaiban megegyezik a többjátékos móddal.
+
+### Beállítási Lehetőségek (Konfigurációs Felület)
+
+A játék indítása előtt a játékos testreszabhatja a kihívást:
+
+* **Kérdések száma:**
+    * A mérkőzés maximális hossza állítható (5-ös lépésközökkel: pl. 5, 10, 15, 20 kérdés).
+* **AI Pontossága:**
+    * Állítható az ellenfél „okossága” (pl. Könnyű, Közepes, Nehéz).
+    * Ez a háttérben azt befolyásolja, hogy a gép mekkora **valószínűséggel** választja ki a helyes választ.
+
+### Játékmenet AI ellen
+
+A játékos és az AI párhuzamosan játszik.
+* Aki helyesen válaszol pontot kap, ezután továbblépnek a következő kérdére.
+
+### 5. Zárófolyamatok és Visszajelzés
+
+A játék lezárása után (Multiplayer vagy AI mód) a rendszer egy **Összesített Ranglistát** jelenít meg.
+
+* A lista tartalmazza az összes résztvevő nevét (vagy az AI-t).
+* A győztes neve kiemelt vizuális effektekkel jelenik meg.
+
+Ez a struktúra biztosítja, hogy az alkalmazás mind **szórakoztatási** (party game), mind **edukációs** (gyakorlás) célra kiválóan alkalmas legyen, minimális adminisztrációs teher mellett.
 
 ---
 
-## 9. Riportok
-
-- Szabad riport:  
-  Az alkalmazás célja egy valós idejű, többjátékos kvízrendszer létrehozása, amely egyszerre több felhasználót képes kiszolgálni, és minden játékosnak azonos kérdéseket biztosít.  
-  A rendszer automatikusan értékeli a válaszokat, rangsort készít, és vizuális visszajelzést ad a játékosoknak.
-
-- Irányított riport (példák):  
-  - Mennyi ideje van a játékosnak válaszolni? → 10 másodperc  
-  - Ki indíthatja a játékot? → Csak a host  
-  - Milyen kérdések vannak? → Az Open Trivia API által biztosított kategóriákból  
-  - Mikor ér véget a játék? → Ha csak egy játékos marad életben  
-
----
-
-## 10. Fogalomtár
+## 8. Fogalomtár
 
 | Fogalom | Meghatározás |
 |----------|---------------|
@@ -137,7 +188,7 @@ A Quiz Royale célja ennek a folyamatnak a modernizálása, a következő módon
 
 ---
 
-## 11. Use Case Diagram
+## 9. Use Case Diagram
 <img width="371" height="429" alt="image" src="https://github.com/user-attachments/assets/987a257d-4b59-4ba2-b69b-931ee1623f61" />
 
 <img width="1023" height="338" alt="image" src="https://github.com/user-attachments/assets/2082820a-b3a9-4901-92df-c6d8adb188a5" />
