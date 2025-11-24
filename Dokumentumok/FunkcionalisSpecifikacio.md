@@ -1,17 +1,6 @@
 # Funkcionális specifikáció
 
-## 1. Áttekintés
-
-A Quiz Royale egy online, valós idejű, multiplayer kvízjáték, amelyben a játékosok egymás ellen mérhetik össze általános műveltségüket.  
-A cél, hogy a játékosok egy Battle Royale-szerű küzdelemben vegyenek részt, ahol minden kérdés után azok a játékosok esnek ki, akik hibásan válaszoltak.  
-A végén az utolsó bent maradt játékos a győztes.  
-
-A játék böngészőből elérhető, reszponzív felülettel rendelkezik, és valós idejű kommunikációt használ a Flask (Python) és React.js technológiák között Socket.IO segítségével.  
-A kérdéseket az Open Trivia API szolgáltatja, amely tematikusan gyűjtött kérdéseket kínál több kategóriában (pl. Tudomány, Filmek, Történelem, Sport stb.).  
-
----
-
-## 2. Üzleti Megszorítások (Business Constraints)
+## 1. Üzleti Megszorítások (Business Constraints)
 
 Ez a dokumentum rögzíti az alkalmazás felhasználói felületének és üzleti logikájának alapvető megszorításait és feltételes lépéseit.
 
@@ -86,22 +75,7 @@ Ez a dokumentum rögzíti az alkalmazás felhasználói felületének és üzlet
 
 ---
 
-## 3. Igényelt üzleti folyamatok modellje
-
-A cél egy interaktív, valós idejű játékplatform megvalósítása, ahol:
-- a játékosok egy szobába csatlakoznak,
-- a host indítja a játékot,
-- mindenki egyszerre kap kérdést,
-- a hibásan válaszolók kiesnek,
-- a helyesen válaszolók továbbjutnak,
-- végül az utolsó bent maradt játékos lesz a győztes.  
-
-A rendszer automatikusan értékeli a válaszokat és megjeleníti az eredményeket,  
-így nincs szükség manuális pontozásra vagy beavatkozásra.
-
----
-
-## 4. Használati esetek
+## 2. Használati esetek
 
 | Szereplő | Jogosultságok / Leírás |
 |-----------|------------------------|
@@ -111,7 +85,7 @@ A rendszer automatikusan értékeli a válaszokat és megjeleníti az eredménye
 
 ---
 
-## 5. Megfeleltetés (követelmények – funkciók)
+## 3. Megfeleltetés (követelmények – funkciók)
 
 | Funkció Azonosító | Kapcsolódó Követelmény | Funkció Neve | Leírás |
 | :--- | :--- | :--- | :--- |
@@ -132,7 +106,7 @@ A rendszer automatikusan értékeli a válaszokat és megjeleníti az eredménye
 
 ---
 
-## 6. Képernyőtervek
+## 4. Képernyőtervek
 
 - **Main Menu:** „Szoba létrehozása” és „Csatlakozás szobához” gombok  
 - **JoinRoom:** név + szobakód beviteli mezők  
@@ -145,7 +119,7 @@ A rendszer automatikusan értékeli a válaszokat és megjeleníti az eredménye
 
 ---
 
-## 7. Forgatókönyv – Példa játék menete
+## 5. Forgatókönyv – Példa játék menete
 
 - [UserStory1](UserStory1)
 - [UserStory2](UserStory2)
@@ -156,7 +130,7 @@ A rendszer automatikusan értékeli a válaszokat és megjeleníti az eredménye
 
 ---
 
-## 8. Funkció – Követelmény megfeleltetés
+## 6. Funkció – Követelmény megfeleltetés
 
 | Funkció | Modul ID | Lefedettség |
 |----------|-----------|--------------|
@@ -168,7 +142,7 @@ A rendszer automatikusan értékeli a válaszokat és megjeleníti az eredménye
 
 ---
 
-## 9. Fogalomszótár
+## 7. Fogalomszótár
 
 | Fogalom | Meghatározás |
 |----------|---------------|
