@@ -5,9 +5,10 @@
 ## 🚀 Features
 - ⚡ **Multiplayer, real-time gameplay**
 - 🧠 **Dynamic quiz questions** from APIs
-- 🏆 **Battle Royale mode** — last player standing wins  
+- 🏆 **Battle Royale mode** - last player standing wins
+- 💻 **Solo mode** - play against the computer!
 - 🎨 **Modern web interface** 
-- 🎯 **Join via code or matchmaking** 
+- 🎯 **Join the room via code** 
 
 ## 💻 Tech Stack
 - Python: The backend language, used for handling game logic and server-side operations.
